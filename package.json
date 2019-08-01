@@ -1,0 +1,25 @@
+{
+  "name": "flowki",
+  "version": "1.0.0",
+  "description": "flowki",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flowke/flowki.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/flowke/flowki/issues"
+  },
+  "homepage": "https://github.com/flowke/flowki#readme",
+  "devDependencies": {
+    "jest": "^24.8.0",
+    "webpack": "^4.38.0",
+    "webpack-cli": "^3.3.6",
+    "webpack-merge": "^4.2.1"
+  }
+}
