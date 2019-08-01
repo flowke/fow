@@ -20,26 +20,31 @@ const setProperty = (obj, path, value) => {
   obj[name.pop()] = value;
 };
 
-function vi(obj, path, cb){
+export function replace(obj, path, cb, ctx={}){
 
-  if(!path.length) return cb(obj);
+  if(!path.length) return cb(obj, ctx);
   if(!obj) return cb(obj);
 
+
+  path = path.slice();
   let node = path.shift();
+
+
   if (typeof node === 'function') {
     return obj.map((item, indx) => {
       if (node(item, indx)) {
-        return vi(item, path, cb)
+        return replace(item, path, cb, {indx})
       }
       return item
     })
   }
-
+  
   if (typeof node === 'string') {
-    let rut = vi(getProperty(obj, node), path, cb);
-    setProperty(obj, node, rut)
-    return rut
+    let rut = replace(getProperty(obj, node), path, cb);
+
+    setProperty(obj, node, rut);
+    
+    return obj
   }
 
-  
 }
