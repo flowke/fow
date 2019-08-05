@@ -1,4 +1,6 @@
 
+let version = process.env.BUILD_VERSION;
+
 module.exports = function (api) {
   api.cache(false);
   return {
@@ -6,7 +8,7 @@ module.exports = function (api) {
       [
         require.resolve("@babel/preset-env"),
         {
-
+          modules: version === 'es' ? false : 'auto'
         }
       ]
     ]

@@ -13,8 +13,6 @@ let config = merge(base, {
   }
 }) 
 
-
-
 webpack(config,err=>{
   if(!err){
     console.log('ok ');

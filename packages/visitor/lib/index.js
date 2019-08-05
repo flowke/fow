@@ -3,56 +3,36 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.replace = replace;
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-var getProperty = function getProperty(obj, path) {
-  var name = path.split(".");
-
-  for (var i = 0; i < name.length - 1; i++) {
-    obj = obj[name[i]];
-    if (_typeof(obj) !== "object" || !obj || Array.isArray(obj)) return;
+Object.defineProperty(exports, "replace", {
+  enumerable: true,
+  get: function get() {
+    return _replace["default"];
   }
-
-  return obj[name.pop()];
-};
-
-var setProperty = function setProperty(obj, path, value) {
-  var name = path.split(".");
-
-  for (var i = 0; i < name.length - 1; i++) {
-    if (_typeof(obj[name[i]]) !== "object" && obj[name[i]] !== undefined) return;
-    if (Array.isArray(obj[name[i]])) return;
-    if (!obj[name[i]]) obj[name[i]] = {};
-    obj = obj[name[i]];
+});
+Object.defineProperty(exports, "set", {
+  enumerable: true,
+  get: function get() {
+    return _set["default"];
   }
-
-  obj[name.pop()] = value;
-};
-
-function replace(obj, path, cb) {
-  var ctx = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-  if (!path.length) return cb(obj, ctx);
-  if (!obj) return cb(obj);
-  path = path.slice();
-  var node = path.shift();
-
-  if (typeof node === 'function') {
-    return obj.map(function (item, indx) {
-      if (node(item, indx)) {
-        return replace(item, path, cb, {
-          indx: indx
-        });
-      }
-
-      return item;
-    });
+});
+Object.defineProperty(exports, "get", {
+  enumerable: true,
+  get: function get() {
+    return _get["default"];
   }
+});
+exports.type = void 0;
 
-  if (typeof node === 'string') {
-    var rut = replace(getProperty(obj, node), path, cb);
-    setProperty(obj, node, rut);
-    return obj;
-  }
-}
+var type = _interopRequireWildcard(require("./type"));
+
+exports.type = type;
+
+var _replace = _interopRequireDefault(require("./replace"));
+
+var _set = _interopRequireDefault(require("./set"));
+
+var _get = _interopRequireDefault(require("./get"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj["default"] = obj; return newObj; } }
