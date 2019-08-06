@@ -2,6 +2,8 @@
 let version = process.env.BUILD_VERSION;
 
 module.exports = function (api) {
+  
+  const isTest = api.env('test');
   api.cache(false);
   return {
     "presets": [

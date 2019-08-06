@@ -9,16 +9,16 @@ Object.defineProperty(exports, "replace", {
     return _replace["default"];
   }
 });
-Object.defineProperty(exports, "set", {
-  enumerable: true,
-  get: function get() {
-    return _set["default"];
-  }
-});
 Object.defineProperty(exports, "get", {
   enumerable: true,
   get: function get() {
     return _get["default"];
+  }
+});
+Object.defineProperty(exports, "set", {
+  enumerable: true,
+  get: function get() {
+    return _set["default"];
   }
 });
 exports.type = void 0;
@@ -29,9 +29,9 @@ exports.type = type;
 
 var _replace = _interopRequireDefault(require("./replace"));
 
-var _set = _interopRequireDefault(require("./set"));
-
 var _get = _interopRequireDefault(require("./get"));
+
+var _set = _interopRequireDefault(require("./set"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

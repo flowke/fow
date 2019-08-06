@@ -1,19 +1,20 @@
 {
   "name": "@fow/visitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "lib/index.js",
   "browser": "es/index.js",
   "scripts": {
-    "test": "../../node_modules/.bin/jest",
-    "build": "npm run es && npm run c",
+    "test": "jest",
+    "build": "npm run es && npm run cjs",
     "es": "BUILD_VERSION=es babel src --out-dir es",
-    "c": "babel src --out-dir lib"
+    "cjs": "babel src --out-dir lib"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/preset-env": "^7.5.5"
+    "@babel/preset-env": "^7.5.5",
+    "jest": "^24.8.0"
   },
   "dependencies": {}
 }
