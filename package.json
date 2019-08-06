@@ -1,7 +1,7 @@
 {
-  "name": "flowki",
+  "name": "fow",
   "version": "1.0.0",
-  "description": "flowki",
+  "description": "fow",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,10 +13,13 @@
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/flowke/flowki/issues"
+    "url": "https://github.com/flowke/fow/issues"
   },
-  "homepage": "https://github.com/flowke/flowki#readme",
+  "homepage": "https://github.com/flowke/fow#readme",
   "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-jest": "^24.8.0",
     "jest": "^24.8.0",
     "webpack": "^4.38.0",
     "webpack-cli": "^3.3.6",
