@@ -1,6 +1,6 @@
 {
   "name": "@fow/visitor",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "lib/index.js",
   "browser": "es/index.js",
