@@ -15,8 +15,8 @@ export default function eachArr(array, cb){
     ctx.index = index
     ctx.value = value
     
-    if (ctx.done) return ctx;
+    if (ctx.done===true) return ctx;
   }
 
-  return ctx
+  return null;
 }
