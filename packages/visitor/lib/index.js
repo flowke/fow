@@ -63,6 +63,12 @@ Object.defineProperty(exports, "eachObj", {
     return _eachObj["default"];
   }
 });
+Object.defineProperty(exports, "queryify", {
+  enumerable: true,
+  get: function get() {
+    return _queryify["default"];
+  }
+});
 exports.type = void 0;
 
 var type = _interopRequireWildcard(require("./type"));
@@ -88,6 +94,8 @@ var _toArr = _interopRequireDefault(require("./toArr"));
 var _execOnce = _interopRequireDefault(require("./execOnce"));
 
 var _eachObj = _interopRequireDefault(require("./eachObj"));
+
+var _queryify = _interopRequireDefault(require("./queryify"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

@@ -10,6 +10,7 @@ export {default as debounceExec} from './debounceExec';
 export {default as toArr} from './toArr';
 export {default as execOnce} from './execOnce';
 export {default as eachObj} from './eachObj';
+export {default as queryify} from './queryify';
 
 export {
   type
