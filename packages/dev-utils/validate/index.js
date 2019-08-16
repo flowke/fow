@@ -4,38 +4,26 @@
 */
 "use strict";
 
-const Ajv = require("ajv");
-const ajv = new Ajv({
-  allErrors: true,
-  verbose: true
-});
-require("ajv-keywords")(ajv, ["instanceof"]);
-require("./keywords/absolutePath")(ajv);
+const createErrorsMsg = require('./createErrorsMsg');
+const vali = require('./validate');
+const ConfigError = require('./ConfigError');
 
-const validateSchema = (schema, options) => {
-  if (Array.isArray(options)) {
-    const errors = options.map(options => validateObject(schema, options));
-    errors.forEach((list, idx) => {
-      const applyPrefix = err => {
-        err.dataPath = `[${idx}]${err.dataPath}`;
-        if (err.children) {
-          err.children.forEach(applyPrefix);
-        }
-      };
-      list.forEach(applyPrefix);
-    });
-    return errors.reduce((arr, items) => {
-      return arr.concat(items);
-    }, []);
-  } else {
-    return validateObject(schema, options);
+
+module.exports = function(schema, data, cfg={}){
+  let result = vali(schema, data);
+
+  if (result.errors) {
+    throw new ConfigError(createErrorsMsg(result.errors, schema, cfg.title))
   }
-};
+  
+}
 
-const validateObject = (schema, options) => {
-  const validate = ajv.compile(schema);
-  const valid = validate(options);
-  return valid ? [] : filterErrors(validate.errors);
-};
-
-module.exports = validateSchema;
+exports.compile = function(schema, cfg){
+  let validate = vali.compile(schema);
+  return function(data){
+    let result = validate(data);
+    if (result.errors) {
+      throw new ConfigError(createErrorsMsg(result.errors, schema, cfg.title))
+    }
+  }
+}
