@@ -21,7 +21,6 @@ export function isType(val, type) {
   }else{
     return val instanceof type
   }
-
 }
 
 // 

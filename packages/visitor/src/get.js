@@ -1,4 +1,5 @@
 export default function(obj, path){
+  if(typeof obj !== 'object') return 
   let name = path.split(".");
   for (let i = 0; i < name.length - 1; i++) {
     obj = obj[name[i]];
@@ -6,3 +7,4 @@ export default function(obj, path){
   }
   return obj[name.pop()];
 };
+

@@ -11,15 +11,22 @@ require("ajv-keywords")(ajv, ["instanceof"]);
 require("./keywords/absolutePath")(ajv);
 
 const validate = (schema, options) => {
-  const validate = ajv.compile(schema);
-  const valid = validate(options);
-  return valid ? [] : validate.errors;
+  const v = ajv.compile(schema);
+  const valid = v(options);
+
+  return {
+    errors: valid ? null : v.errors
+  }
+
 };
 
 const compile = (schema)=>{
-  const validate = ajv.compile(schema);
+  const v = ajv.compile(schema);
   return (data)=>{
-    return validate(data) ? [] : validate.errors;
+    const valid = v(data);
+    return {
+      errors: valid ? null : v.errors
+    }
   }
 }
 
