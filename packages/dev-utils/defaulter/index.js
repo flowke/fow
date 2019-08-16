@@ -105,7 +105,7 @@ class OptionsDefaulter {
             oldValue = [];
           }
           oldValue.push(...this.defaults[name]);
-          setProperty(options, name, oldValue);
+          setProperty(options, name, oldValue);                                 
           break;
         }
         default:
