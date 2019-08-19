@@ -1,4 +1,3 @@
-import type from './type';
 
 export default function ify(data){
   if(!data || typeof data !== 'object') return '';
