@@ -21,7 +21,7 @@ const setProperty = (obj, path, value) => {
 };
 
 
-module.exports = class Combiner{
+module.exports = class Defaulter{
   constructor(){
     this.default = {}
 
