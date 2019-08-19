@@ -1,12 +1,7 @@
 
 "use strict";
 
-/**
- * Gets the value at path of object
- * @param {object} obj object to query
- * @param {string} path query path
- * @returns {any} - if {@param path} requests element from array, then `undefined` will be returned
- */
+
 const getProperty = (obj, path) => {
   let name = path.split(".");
   for (let i = 0; i < name.length - 1; i++) {
@@ -16,13 +11,7 @@ const getProperty = (obj, path) => {
   return obj[name.pop()];
 };
 
-/**
- * Sets the value at path of object. Stops execution, if {@param path} requests element from array to be set
- * @param {object} obj object to query
- * @param {string} path query path
- * @param {any} value value to be set
- * @returns {void}
- */
+
 const setProperty = (obj, path, value) => {
   let name = path.split(".");
   for (let i = 0; i < name.length - 1; i++) {
@@ -35,9 +24,74 @@ const setProperty = (obj, path, value) => {
 };
 
 
-class DF{
-  constructor(df){
-    this.df = df;
+class Combiner{
+  constructor(){
+    this.default = {}
+
+    this.customTypes = {}
+  }
+
+  define(path, dfValue, type='replace', isForce=false){
+    this.default[path] = {
+      type,
+      dfValue,
+      isForce
+    }
+  }
+
+  addType(name, handler){
+    this.customTypes[name] = handler;
+  }
+
+  generate(options){
+    options = Object.assign({},options);
+
+    for(let path in this.default){
+      let {
+        dfValue, type, isForce
+      } = this.default[path];
+
+      let userValue = getProperty(options,path);
+
+      let doAction = isForce || userValue === undefined;
+
+      if(doAction){
+
+        switch (type) {
+          case 'replace':
+            setProperty(options, path, dfValue)
+            break;
+        
+          case 'tf':
+          case 'transform':
+            setProperty(options, path, dfValue.call(this, userValue, options))
+            break;
+          case 'alter':
+            dfValue.call(this, userValue, options);
+            break;
+          
+          case 'push': {
+            if (!Array.isArray(userValue)) userValue = [userValue];
+            setProperty(options, path, dfValue.concat(userValue))
+            break;
+          }
+
+          default:
+            throw new Error(`${path} cantnot generate with type: ${type}`);
+        }
+
+        for(let cusType in this.customTypes){
+          if (type === cusType){
+            this.customTypes[cusType].call(this, options, dfValue, userValue, {
+              set: ()
+            })
+          }
+        }
+
+      }
+
+    }
+
   }
 }
 
@@ -46,7 +100,10 @@ new DF({
   a: {
     entry: {
       value: './src/index',
-      
+      s: 'call',
+      handler: (val, cfg)=>{
+
+      }
     },
     output: {
       path: '/dist'
