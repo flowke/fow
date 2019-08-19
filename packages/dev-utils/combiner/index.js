@@ -1,7 +1,4 @@
 
-"use strict";
-
-
 const getProperty = (obj, path) => {
   let name = path.split(".");
   for (let i = 0; i < name.length - 1; i++) {
@@ -24,7 +21,7 @@ const setProperty = (obj, path, value) => {
 };
 
 
-class Combiner{
+module.exports = class Combiner{
   constructor(){
     this.default = {}
 
@@ -82,8 +79,17 @@ class Combiner{
 
         for(let cusType in this.customTypes){
           if (type === cusType){
-            this.customTypes[cusType].call(this, options, dfValue, userValue, {
-              set: ()
+            this.customTypes[cusType].call(this, {
+              options, 
+              dfValue, 
+              userValue,
+              path,
+              set: (value)=>{
+                setProperty(options, path, value)
+              },
+              get:(path)=>{
+                return getProperty(options, path)
+              }
             })
           }
         }
@@ -94,25 +100,3 @@ class Combiner{
 
   }
 }
-
-
-new DF({
-  a: {
-    entry: {
-      value: './src/index',
-      s: 'call',
-      handler: (val, cfg)=>{
-
-      }
-    },
-    output: {
-      path: '/dist'
-    },
-    b: {
-      c: []
-    },
-    b2: {
-
-    }
-  }
-})
