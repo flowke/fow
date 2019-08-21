@@ -24,7 +24,6 @@ const setProperty = (obj, path, value) => {
 module.exports = class Defaulter{
   constructor(){
     this.default = {}
-
     this.customTypes = {}
   }
 

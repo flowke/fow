@@ -13,11 +13,12 @@
 
 那么: config.a.b 值的 dataPath 就是: 'a.b'.
 
-### `set(dataPath, [strategy,] defaultValue)` 
+### `defign(dataPath, defaultValue, [type[,isForce]] )` 
 
 - dataPath: 指向的数据位置
-- strategy: optional, <undefined, 'define', 'make', 'append'>
-- defaultValue: 默认值
+- defaultValue: 此路径下的默认值
+- type: optional, <'replace', 'define', 'make', 'append'>, 默认 `replace`
+
 
 strategy 的 4 个值:
 
