@@ -2,9 +2,6 @@
 
 const Create = require('@fow/dev-utils/create');
 
-
-
-
 const yargs = require('yargs');
 
 yargs

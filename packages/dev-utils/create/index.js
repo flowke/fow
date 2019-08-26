@@ -58,6 +58,8 @@ module.exports = class Create{
           templateType,
           toDir
         })
+      }else{
+        throw new Error('f')
       }
     })
     .then(info=>{
@@ -68,6 +70,10 @@ module.exports = class Create{
           templateLocals: info.locals
         })
       }
+    })
+    .catch(e=>{
+      throw e
+      
     })
     
   }
@@ -230,16 +236,18 @@ module.exports = class Create{
       toDir
     } = options;
 
-    this.fetchNpmTemplateInfo(packageName)
+    return this.fetchNpmPkgInfo(packageName)
       .then(info => {
         // 获取 type
         options.packageInfo = info
-        return this.getTemplateType(templateType, info)
+        return this.getTemplateType(templateType, info.templatesConfig)
       })
       .then(type=>{
         // 下载压缩包, 解压到临时目录
         if(type){
           options.templateType = type;
+          console.log(options);
+          
           return this.downloadTarball(options.packageInfo.dist.tarball, packageName)
         }else{
           return null
@@ -278,18 +286,19 @@ module.exports = class Create{
   }
 
   //* 获取包信息
-  fetchNpmTemplateInfo(packageName){
+  fetchNpmPkgInfo(packageName){
     spinner.start('fetching template info...')
     let registry = this.getRegistry();
     spinner.succeed(`got registry: ${registry}`)
 
     let url = `${registry}/${packageName}/latest`;
     spinner.start('fetching template info...')
-    this.request(url)
+
+    return this.request(url)
     .then(res=>{
       try {
         spinner.succeed(`got template info`)
-        return res.templatesConfig
+        return res
       } catch (error) {
         spinner.fail('fail to fetch package info, retry later...')
         process.exit(1)
@@ -523,6 +532,10 @@ module.exports = class Create{
     return request(url,op)
     .then(res=>{
       return res.data
+    })
+    .catch(e=>{
+      spinner.fail(chalk.red.bold('request fali:' + e.message + ' when fetching' + ' ' + url))
+      process.exit(0)
     })
   }
 
