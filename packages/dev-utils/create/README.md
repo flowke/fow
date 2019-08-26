@@ -1,5 +1,27 @@
 # create app template
 
+## 使用
+
+```
+const Create = require('@fow/dev-utils/create');
+
+new Create().run(options)
+
+```
+
+## `options`
+
+```js
+createMethod, // 创建方式
+forceCreate, // 是否强制创建
+initDirName, // 初始化的目录名
+templateType, // 模板类型
+templateFrom='npm', // 'npm', 'git', 'local',
+packageName, // 模板所在的 npm 包名
+```
+
+## 使用的模板结构
+
 template 包 结构:
 
 ```

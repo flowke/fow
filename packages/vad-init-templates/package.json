@@ -1,0 +1,30 @@
+{
+  "name": "@fow/vad-init-templates",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Flowke",
+  "templatesConfig": {
+    "simple": {
+      "name": "simple",
+      "describe": "template will only contain vue"
+    },
+    "router": {
+      "name": "router",
+      "describe": "template will contain vue+router"
+    },
+    "vuex": {
+      "name": "vuex",
+      "describe": "template will contain vue+vuex"
+    },
+    "router-vuex": {
+      "name": "router-vuex",
+      "describe": "template will contain vue+router+vuex"
+    }
+  },
+  "license": ""
+}

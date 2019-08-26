@@ -1,0 +1,30 @@
+{
+  "name": "{{packageName}}",
+  "version": "1.0.0",
+  "description": "awesome app {{packageName}} :) ",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "tha-v dev",
+    "build": "tha-v build"
+  },
+  "dependencies": {
+  {% for key, val in dependencies %}
+  {% if loop.last %}
+    "{{key}}": "{{val}}"
+  {% else %}
+    "{{ key }}": "{{val}}",
+  {% endif %}
+  {% endfor %}
+
+  },
+  "devDependencies": {
+    {% for key, val in devDependencies %}
+    {% if loop.last %}
+      "{{key}}": "{{val}}"
+    {% else %}
+      "{{ key }}": "{{val}}",
+    {% endif %}
+    {% endfor %}
+  }
+}
