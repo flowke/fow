@@ -9,7 +9,10 @@ const compressing = require('compressing');
 const os = require('os');
 const ora = require('ora');
 const swig = require('swig');
+const execa = require('execa');
+
 const { ordered, toArr } = require('@fow/visitor');
+
 
 const spinner = ora();
 
@@ -51,6 +54,9 @@ module.exports = class Create{
     if (createMethod === 'init') p = this.getInitDir(initDirName, forceCreate)
 
     p.then(toDir=>{
+
+      console.log(toDir,'toDir');
+      
       if (templateFrom === 'npm' && toDir) {
         config.toDir = toDir
         return this.generateTemplateWithNpm({
@@ -59,7 +65,7 @@ module.exports = class Create{
           toDir
         })
       }else{
-        throw new Error('f')
+        return null
       }
     })
     .then(info=>{
@@ -98,6 +104,7 @@ module.exports = class Create{
         }
         return path.resolve(dirName)
       })
+
     }else[
       p = this.askDirName()
         .then(dir => path.resolve(dir))
@@ -246,7 +253,6 @@ module.exports = class Create{
         // 下载压缩包, 解压到临时目录
         if(type){
           options.templateType = type;
-          console.log(options);
           
           return this.downloadTarball(options.packageInfo.dist.tarball, packageName)
         }else{
