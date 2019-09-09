@@ -9,10 +9,9 @@ const compressing = require('compressing');
 const os = require('os');
 const ora = require('ora');
 const swig = require('swig');
-const execa = require('execa');
+const { spawn } = require('child_process');
 
-const { ordered, toArr } = require('@fow/visitor');
-
+const {toArr } = require('@fow/visitor');
 
 const spinner = ora();
 
@@ -37,7 +36,7 @@ module.exports = class Create{
 
 
   run(config){
-
+    
     let {
       createMethod, // 创建方式
       forceCreate, // 是否强制创建
@@ -55,8 +54,8 @@ module.exports = class Create{
 
     p.then(toDir=>{
 
-      console.log(toDir,'toDir');
-      
+
+      // 使用 npm 安装
       if (templateFrom === 'npm' && toDir) {
         config.toDir = toDir
         return this.generateTemplateWithNpm({
@@ -70,10 +69,9 @@ module.exports = class Create{
     })
     .then(info=>{
       if(info){
-        this.install({
+        return this.install({
           toDir: config.toDir,
           createMethod,
-          templateLocals: info.locals
         })
       }
     })
@@ -171,69 +169,48 @@ module.exports = class Create{
   install(options){
     let {
       toDir,
-      createMethod,
-      templateLocals
+      createMethod
     } = options;
 
     let toDirName = path.basename(toDir)
 
     if (createMethod === 'init') {
       shell.cd(toDirName)
-
     }
 
-    let {
-      dependencies,
-      devDependencies
-    } = templateLocals;
+    return new Promise((rv,rj)=>{
+      let p = spawn('npm', ['i'], { stdio: 'inherit' });
+      p.on('exit', (c, s) => {
+        console.log('e', c,s);
+        
+        if(!c){
+          rj()
+        }
+        rv()
 
-    let dep = Object.keys(dependencies)
-    let devDep = Object.keys(devDependencies)
-
-    dep = dep.map(name => {
-      return function () {
-        let p = new Promise(rv => {
-          shell.exec(`npm i ${name}`, { silent: true }, (code, stdout, stderr) => {
-            rv(name)
-          })
-        })
-        p.info = name
-        return p
-      }
-
-    })
-    devDep = devDep.map(name => {
-      return function () {
-        let p = new Promise(rv => {
-          shell.exec(`npm i -D ${name}`, { silent: true }, (code, stdout, stderr) => {
-            rv(name)
-          })
-        })
-        p.info = name
-        return p
-      }
-
-    })
-
-    let all = dep.concat(devDep)
-
-    let i = 1;
-    let spin = ora({ spinner: 'point' })
-    spin.start(`start installation`)
-
-    ordered(all, {
-      paraller: true,
-      waitingEach: name => {
-        spin.start(`[${i++}/${all.length}] install ${name}`)
-      },
-      afterEach: name => {
-
-        spin.succeed();
-      }
-    })
-      .then(() => {
-        this.logUsage(createMethod, toDirName)
       })
+      p.on('error', (err) => {
+        console.log('rr', c, s);
+        rj()
+      })
+    })
+    .then(()=>{
+      this.logUsage(createMethod, toDirName);
+      return true
+    })
+    .catch(e=>{
+      return false
+    })
+
+
+
+    
+
+
+
+   
+
+    
   }
   // * 通过 npm 生成模板, 并收集生成过程中的信息
   generateTemplateWithNpm(options={}){

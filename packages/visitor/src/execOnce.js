@@ -6,7 +6,7 @@ export default function execOnce(fn) {
     if (!isExecd) {
       isExecd = true
 
-      fn(...rest)
+      fn.call(this,...rest)
     }
   }
 }
