@@ -1,6 +1,5 @@
 const glob = require('globby');
 const path = require('path');
-const chalk = require('chalk');
 const fse = require('fs-extra');
 const inquirer = require('inquirer');
 const request = require('axios');
@@ -13,11 +12,13 @@ const { spawn } = require('child_process');
 
 const {toArr } = require('@fow/visitor');
 
+require('colors')
+
 const spinner = ora();
 
 function logExistDir(dir) {
   console.log();
-  console.log(`Directory ${chalk.bold(path.resolve(dir) + '/')} already exists, please use another one.`);
+  console.log(`Directory ${(path.resolve(dir) + '/').bold} already exists, please use another one.`);
   console.log();
 }
 
@@ -33,7 +34,6 @@ module.exports = class Create{
     };
     
   }
-
 
   run(config){
     
@@ -123,7 +123,7 @@ module.exports = class Create{
           if (!dir) return 'dir must be a valid name';
 
           if (fse.existsSync(path.resolve(dir))) {
-            return `Directory ${chalk.bold(path.resolve(dir) + '/')} already exists, please use another one.`
+            return `Directory ${(path.resolve(dir) + '/').bold} already exists, please use another one.`
           }
           return true
         }
@@ -150,12 +150,12 @@ module.exports = class Create{
       let fdName = path.basename(dir);
 
       console.log();
-      console.log(`There is something in ${chalk.bold(fdName+'/')} directory, make sure it is clean or use '--force' to clean it first.`);
+      console.log(`There is something in ${(fdName + '/').bold} directory, make sure it is clean or use '--force' to clean it first.`);
       console.log();
 
-      console.log(chalk.green(`|-${fdName}`));
+      console.log((`|-${fdName}`).green);
       files.forEach(e=>{
-        console.log(chalk.green(`  |-${e}`));
+        console.log((`  |-${e}`).green);
       })
       console.log();
       dir = null
@@ -179,26 +179,43 @@ module.exports = class Create{
     }
 
     return new Promise((rv,rj)=>{
+      
+      console.log();
       let p = spawn('npm', ['i'], { stdio: 'inherit' });
       p.on('exit', (c, s) => {
-        console.log('e', c,s);
         
         if(!c){
-          rj()
+          rv()
         }
-        rv()
+        rj()
 
       })
       p.on('error', (err) => {
-        console.log('rr', c, s);
         rj()
       })
     })
     .then(()=>{
+      console.log('\n');
       this.logUsage(createMethod, toDirName);
       return true
     })
     .catch(e=>{
+      console.log();
+
+      console.log('Installing package fail. '.red.bold);
+
+      let cd = '';
+      if (createMethod === 'init') {
+        cd = `- cd ${toDirName}`
+      }
+      console.log();
+
+      console.log([
+        'retry later:\n',
+        cd && `- cd ${toDirName}\n`,
+        'npm i\n'
+      ].join('').bold.green)
+      
       return false
     })
 
@@ -488,7 +505,7 @@ module.exports = class Create{
     let url = '';
 
     if (!this.hasNpm) {
-      console.log(chalk.red('Ensure npm has been installed!'))
+      console.log('Ensure npm has been installed!'.red)
       process.exit(1);
     }
     
@@ -503,7 +520,7 @@ module.exports = class Create{
     }
 
     if(!url){
-      console.log(chalk.red('Make sure you set a valid npm registry url'));
+      console.log('Make sure you set a valid npm registry url'.red);
       process.exit(1)
     }
 
@@ -517,7 +534,7 @@ module.exports = class Create{
       return res.data
     })
     .catch(e=>{
-      spinner.fail(chalk.red.bold('request fali:' + e.message + ' when fetching' + ' ' + url))
+      spinner.fail(('request fali:' + e.message + ' when fetching' + ' ' + url).red.bold)
       process.exit(0)
     })
   }
@@ -529,7 +546,7 @@ module.exports = class Create{
     }
     console.log();
     
-    console.log(chalk.bold(`usage:
+    console.log((`usage:
   ${cd}
   - npm i
   - npm start
@@ -538,7 +555,7 @@ module.exports = class Create{
 
   other usage:
     npm run build - build app
-    `))
+    `).bold)
   }
 
 
