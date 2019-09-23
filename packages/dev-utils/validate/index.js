@@ -18,7 +18,7 @@ module.exports = function(schema, data, cfg={}){
   
 }
 
-exports.compile = function(schema, cfg){
+exports.compile = function(schema, cfg={}){
   let validate = vali.compile(schema);
   return function(data){
     let result = validate(data);

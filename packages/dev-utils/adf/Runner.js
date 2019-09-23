@@ -1,12 +1,23 @@
 // 控制 App 文件的生成
 
-const EventEmitter = require('events');
+const Hooks = require('../hooks');
 
 
 
-class Runner extends EventEmitter{
+class Runner extends Hooks{
+
   constructor(){
+    this.setHooks({
 
+    })
+  }
+
+  run(){
+
+  }
+
+  getOptions(){
+    
   }
 
   generateApp(){
