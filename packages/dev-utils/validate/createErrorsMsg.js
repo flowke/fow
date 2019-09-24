@@ -25,8 +25,6 @@ const getSchemaPartText = (schema, schemaPart, additionalPath) => {
     schemaPart = getSchemaPart(schema, schemaPart.$ref);
   }
   let schemaText = formatSchema(schemaPart);
-
-  console.log(schemaText,'fff', schemaPart);
   
 
   if (schemaPart.description) {

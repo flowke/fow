@@ -27,3 +27,4 @@ exports.compile = function(schema, cfg={}){
     }
   }
 }
+exports.ajv = vali.ajv;

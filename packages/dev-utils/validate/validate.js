@@ -31,5 +31,6 @@ const compile = (schema)=>{
 }
 
 validate.compile = compile;
+validate.ajv = ajv;
 
 module.exports = validate;

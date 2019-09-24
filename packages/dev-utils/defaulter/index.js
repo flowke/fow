@@ -49,7 +49,10 @@ module.exports = class Defaulter{
 
       let userValue = getProperty(options,path);
 
-      let doAction = isForce || userValue === undefined;
+      // 是否强制设置
+      // isForce 是 true
+      // 用户没有                               
+      let doAction = isForce || (userValue === undefined);
 
       if(doAction){
 
