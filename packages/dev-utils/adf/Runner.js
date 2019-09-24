@@ -3,6 +3,7 @@
 const Hooks = require('../hooks');
 const schema = require('./config/BaseOptionsSchema');
 const validate = require('../validate');
+const Defaulter = require('./config/DefaultOptions');
 
 
 
@@ -19,11 +20,13 @@ class Runner extends Hooks{
     
   }
 
-  getOptions(){
+  getOptions(options){
     // add schema
     this.hooks.addSchema.call(s => validate.ajv.addSchema(s));
 
-    let 
+    let defaultOptions = new Defaulter().generate(options);
+
+    
   }
 
   generateApp(){

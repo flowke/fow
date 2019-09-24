@@ -27,12 +27,23 @@ module.exports = class Defaulter{
     this.customTypes = {}
   }
 
-  define(path, dfValue, type='replace', isForce=false){
+  define(path, dfValue, type='set', isForce=false){
     this.default[path] = {
       type,
       dfValue,
       isForce
     }
+  }
+
+  set(path, value, isForce){
+    this.define(path, value, 'set', isForce);
+  }
+
+  tf(path, value, isForce){
+    this.define(path, value, 'tf', isForce);
+  }
+  push(path, value, isForce) {
+    this.define(path, value, 'push', isForce);
   }
 
   addType(name, handler){
@@ -57,7 +68,7 @@ module.exports = class Defaulter{
       if(doAction){
 
         switch (type) {
-          case 'replace':
+          case 'set':
             setProperty(options, path, dfValue)
             break;
         
