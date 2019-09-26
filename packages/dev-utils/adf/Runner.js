@@ -21,10 +21,13 @@ class Runner extends Hooks{
   }
 
   getOptions(options){
+    let defaulter = new Defaulter();
+
     // add schema
     this.hooks.addSchema.call(s => validate.ajv.addSchema(s));
+    
 
-    let defaultOptions = new Defaulter().generate(options);
+    let defaultOptions = defaulter.generate(options);
 
     
   }
