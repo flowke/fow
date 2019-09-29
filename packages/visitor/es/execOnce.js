@@ -3,7 +3,12 @@ export default function execOnce(fn) {
   return function () {
     if (!isExecd) {
       isExecd = true;
-      fn.apply(void 0, arguments);
+
+      for (var _len = arguments.length, rest = new Array(_len), _key = 0; _key < _len; _key++) {
+        rest[_key] = arguments[_key];
+      }
+
+      fn.call.apply(fn, [this].concat(rest));
     }
   };
 }

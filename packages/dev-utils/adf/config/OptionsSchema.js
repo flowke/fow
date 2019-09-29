@@ -1,11 +1,6 @@
 module.exports = {
   type: 'object',
   // "additionalProperties": false,
-  errorMessage: {
-    type: 'config must be a object.',
-    additionalProperties: 'config can not contain additional properties.'
-
-  },
 
   properties: {
     splitRuntime: {

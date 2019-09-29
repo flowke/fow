@@ -4,6 +4,8 @@ const Hooks = require('../hooks');
 const schema = require('./config/BaseOptionsSchema');
 const validate = require('../validate');
 const Defaulter = require('./config/DefaultOptions');
+const jsonmergepatch = require('json-merge-patch');
+const toArr = require('@fow/visitor/toArr');
 
 
 
@@ -12,23 +14,64 @@ class Runner extends Hooks{
   constructor(){
     super();
     this.setHooks({
-      addSchema: ['add']
+      addSchema: ['addFn'],
+      addDefaultOption: ['defaulter']
     })
   }
 
-  run(){
-    
+  run(userOptions){
+    // generate Options
+    let options = this.getOptions(userOptions);
+
+
   }
 
-  getOptions(options){
-    let defaulter = new Defaulter();
+  getOptions(userOptions){
 
-    // add schema
-    this.hooks.addSchema.call(s => validate.ajv.addSchema(s));
+    // patch schema
+    this.hooks.addSchema.call((s={}) => {
+
+      let result = {error: null}
+
+      try {
+        // 是否有相同的 properties key
+        let rut = toArr(s).forEach(key => {
+          if (typeof schema[key] !== 'undefined') {
+            return false;
+          }
+        });
+
+        if(rut === false){
+          throw new Error(`There is a same key(${key}) in Schema.properties`);
+        }
+
+        jsonmergepatch.apply(schema, {
+          properties: s
+        });
+      } catch (error) {
+        result.error = error;
+      }
+
+      return result
+      
+    });
+
+    // validate schema
+    try {
+      validate(schema, userOptions)
+    } catch (error) {
+      throw error;
+    }
     
 
-    let defaultOptions = defaulter.generate(options);
+    let defaulter = new Defaulter();
+    // add addDefaultOption
+    this.hooks.addDefaultOption.call(defaulter);
+    
 
+    let options = defaulter.generate(userOptions);
+
+    return options;
     
   }
 

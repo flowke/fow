@@ -10,7 +10,7 @@ dfValue: 值, 根据 type 不同
 
 type: 
 
-- replace: 在此路径设置值, 如果有相同路径, 覆盖
+- set: 在此路径设置值, 如果有相同路径, 覆盖
 - tf/transform: dfValue 是 handler(userValue, options) -> value
 - alter: dfValue 是 handler(userValue, options), 只运行 dfValue
 - push: 把 userValue 改造成 array, push 到 path
@@ -26,3 +26,10 @@ isForce: true, 强制进行默认值处理; false: 只有用户没有相应配�
 ## generate(options)
 
 options: 用户定义的配置数据
+
+## [type](path, value, isForce)
+
+type: define 方法的点个参数所指明的类型
+
+例如: set( path, value, ifForce ) 相等于 define(path, dfValue, 'set', isForce=false)
+

@@ -10,17 +10,34 @@ module.exports = class Hooks{
       let val = obj[name]
       this.hooks[name] = call(name, val);
     }
+    return this
   }
 
 }
 
 class Hook extends EventEmitter{
   constructor(name){
+    super();
     this.name = name;
+    this.setMaxListeners(0);
+    this.on('error', e=>{
+      process.emitWarning(e.message)
+    })
   }
 
-  call(){
-    this.emit(this.name);
+  onCall(msg, fn){
+    this.on(this.name, (...args)=>{
+      try {
+        fn.call(undefined, ...args)
+      } catch (error) {
+        this.emit('error', new Error(`Error: ${msg}\n ${error.message}`))
+      }
+      
+    });
+  }
+
+  call(...args){
+    this.emit(this.name,...args);
   };
 
   asyncCall(){
@@ -42,5 +59,5 @@ class Hook extends EventEmitter{
 }
 
 function call(name, args){
-  return new Event(name, args);
+  return new Hook(name, args);
 }

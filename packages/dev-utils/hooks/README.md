@@ -1,6 +1,21 @@
 
 # Hooks
 
+## Usage
+
+```js
+let hooks = new Hooks().setHooks({
+  add: ['addFn']
+});
+
+hooks.add.onCall((fn)=>{
+  fn('xxx')
+})
+
+hooks.add.call((x)=>console.log('add:'+ x));
+// 会打印: "add: xxx"
+```
+
 ## Properties
 
 hooks : 注册的所有 Hook 实例
@@ -25,3 +40,5 @@ name: 名字
 
 call(arg1, arg2...) 
 触发同步事件
+
+
