@@ -3,33 +3,65 @@
 const Hooks = require('../hooks');
 const schema = require('./config/BaseOptionsSchema');
 const validate = require('../validate');
-const Defaulter = require('./config/DefaultOptions');
+const Defaulter = require('./DefaultOptions');
+const WebpackConfig = require('./WebpackConfig');
 const jsonmergepatch = require('json-merge-patch');
-const toArr = require('@fow/visitor/toArr');
+const {toArr, isType} = require('@fow/visitor');
+const ChunkBlock = require('../chunkBlock');
+const fse = require('fs-extra');
+const runnerConfig = require('./config/runner.config');
 
-
+let { 
+  appRoot,
+  tempFilePath
+} = runnerConfig;
 
 class Runner extends Hooks{
 
   constructor(){
     super();
     this.setHooks({
-      addSchema: ['addFn'],
-      addDefaultOption: ['defaulter']
-    })
+      patchSchema: ['patchFn'],
+      addDefaultOption: ['defaulter'],
+      chainWebpack: ['chain'],
+      entry: ['chunkBlock']
+    });
+    this.appFiles = [];
   }
 
   run(userOptions){
     // generate Options
     let options = this.getOptions(userOptions);
 
+    let entry = new ChunkBlock();
 
+    this.hooks.entry.call(entry);
+
+    let entryCode = entry.genCode();
+
+    this.addAppFile('.entry.js')
+
+
+    
   }
 
+  // path: string, [string...]
+  // isTemp: 是否放到 temp 目录
+  addAppFile(path, code, isTemp=true){
+    if (!isType(path, 'array')) path = [path];
+
+    if (isTemp) path.unshift(tempFilePath)
+    this.appFiles.push({
+      path,
+      code
+    })
+  }
+
+  // 验证不通过会抛错
   getOptions(userOptions){
 
     // patch schema
-    this.hooks.addSchema.call((s={}) => {
+    this.hooks.patchSchema.call((s={}) => {
 
       let result = {error: null}
 
@@ -75,12 +107,27 @@ class Runner extends Hooks{
     
   }
 
+  generateWebpackConfig(options) {
+
+  }
+
   generateApp(){
+    let tasks = this.appFiles.map(f=>{
+      return fse.outputFile(
+        path.resolve(runnerConfig.appRoot , ...f.path)
+        , 
+        f.code
+      )
+    });
+
+    return Promise.all(tasks)
 
   }
 
-  generateWebpackConfig(){
+  
 
-  }
+}
 
+function getMultiEntry(){
+  
 }

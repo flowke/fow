@@ -9,7 +9,7 @@ module.exports = {
     devServer: {
       type: 'object'
     },
-    clientEnv: {
+    defaultProcessEnv: {
       type: 'object',
       patternProperties: {
         '.*': { type: 'string', errorMessage: 'clientEnv value should be string' }
@@ -48,7 +48,7 @@ module.exports = {
       absolutePath: true,
       errorMessage: 'appRoot should be absolute path'
     },
-    globalVar: {
+    defineVar: {
       type: 'object',
       // 全局变量需要大写
       propertyNames: {

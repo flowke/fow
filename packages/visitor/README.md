@@ -71,3 +71,18 @@ replace(...)
 
 ## `type`
 
+
+## toArr(obj)
+
+return value:
+
+```js
+
+Value {
+  keys: [],
+  values: [],
+  entries: [ [key,value]... ],
+  forEach( (key, value, i)=>{} ),
+  reduce( (accu, key, value, i)=>{}, init ),
+}
+```

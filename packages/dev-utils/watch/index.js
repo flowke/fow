@@ -1,5 +1,22 @@
 const chokidar = require('chokidar');
 
+class WatchNode {
+  constructor(){
+    this.paths = [];
+    this.events = [];
+    this.callbacks = [];
+    this.watcher = null;
+  }
+
+  close(){
+    if(this.watcher) this.watcher.close()
+  }
+
+  unwatch(){
+    if (this.watcher) this.watcher.unwatch(this.paths)
+  }
+}
+
 module.exports = class Watch{
   constructor(){
     this.watches = {}
@@ -151,3 +168,4 @@ module.exports = class Watch{
     }
   }
 }
+

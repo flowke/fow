@@ -1,4 +1,4 @@
-const Defaulter = require('../../defaulter');
+const Defaulter = require('../defaulter');
 const path = require('path');
 
 module.exports = class DfOptions extends Defaulter{
@@ -17,6 +17,7 @@ module.exports = class DfOptions extends Defaulter{
     this.set('paths.outputPath', path.resolve('./dist/'));
     this.set('paths.publicPath', '');
     this.set('paths.appSrc', './src');
+    this.set('paths.appHtml', path.resolve('./src/index.html'));
     this.set('paths.assetsDir', 'static');
     this.set('paths.hash', false);
     this.set('paths.contentHash', true);
@@ -28,11 +29,15 @@ module.exports = class DfOptions extends Defaulter{
     this.set('paths.otherFiles', '');
     this.set('paths.patterns', []);
 
-    this.set('globalVar', {});
+    
+    this.set('multiPages', false);
+    
+    this.set('splitRuntime', false);
 
     this.set('compatibility.level', 0);
 
-    this.set('clientEnv.NODE_ENV', process.env.NODE_ENV || 'production');
+    this.set('defineVar', {});
+    this.set('defaultProcessEnv.NODE_ENV', 'production');
 
     this.set('webpackChain', f => f);
 

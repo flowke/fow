@@ -1,5 +1,31 @@
 # class Defaulter
 
+## 使用
+
+```js
+module.exports = class DfOptions extends Defaulter{
+  constructor(){
+    super();
+
+    this.set('devServer.port', 3005);
+    ...
+
+    // userValue : 用户在此路径设置的值
+    this.tf('dev.port', (userValue, dfOptions)=>{
+      return value
+    });
+    ...
+
+    this.alter('dev.port', (userValue, dfOptions)=>{
+      ... 直接操作数据
+    });
+    ...
+
+    this.push('dev.port', userValue/[userValue])
+  }
+}
+```
+
 ## 实例 api
 
 ### define(path, dfValue, type="replace", isForce=false)

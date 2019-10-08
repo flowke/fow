@@ -1,23 +1,23 @@
 const Config = require('webpack-chain');
-const env = require('./env');
 const path = require('path');
-const PnpWebpackPlugin = require('./plugin/pnp');
+const PnpWebpackPlugin = require('./config/plugin/pnp');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
-const babelConfig = require('./babel.config');
+const babelConfig = require('./config/babel.config');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const ora = require('ora');
 const chalk = require('chalk');
-const type = require('../../utils/type');
+const { isType } = require('@fow/visitor/type');
+const get = require('@fow/visitor/get');
 
 
 
 function createConfig(options) {
 
   let {
-    clientEnv,
-    globalVar,
+    defaultProcessEnv,
+    defineVar,
     paths,
     compatibility,
     multiPages,
@@ -25,8 +25,8 @@ function createConfig(options) {
   } = options;
 
 
-  let isDevMode = clientEnv.NODE_ENV === 'development';
-  let isProdMode = clientEnv.NODE_ENV === 'production';
+  let isDevMode = defaultProcessEnv.NODE_ENV === 'development';
+  let isProdMode = defaultProcessEnv.NODE_ENV === 'production';
 
   const cssRegex = /\.css$/;
   const cssModuleRegex = /\.module\.css$/;
@@ -57,10 +57,10 @@ function createConfig(options) {
 
     if (contentHash === true) return '[contenthash:8]';
 
-    if (contentHash && type(contentHash, 'string')) return contentHash;
+    if (contentHash && isType(contentHash, 'string')) return contentHash;
 
     if (hash === true) return '[hash:8]'
-    if (hash && type(hash, 'string')) return hash
+    if (hash && isType(hash, 'string')) return hash
 
     if (contentHash === false) return ''
 
@@ -130,7 +130,7 @@ function createConfig(options) {
   let cfg = new Config();
 
   cfg.merge({
-    mode: clientEnv.NODE_ENV,
+    mode: defaultProcessEnv.NODE_ENV,
     devtool: isProdMode ? 'cheap-module-source-map' : 'source-map',
     entry: {
       app: [paths.entryPoint]
@@ -325,11 +325,11 @@ function createConfig(options) {
       },
       DefinePlugin: {
         plugin: webpack.DefinePlugin,
-        args: [env.stringified(globalVar)]
+        args: [defineVar]
       },
       EnvironmentPlugin: {
         plugin: webpack.EnvironmentPlugin,
-        args: [env.stringified(clientEnv)]
+        args: [defaultProcessEnv]
       },
       ...isDevMode ? {
         HotModuleReplacementPlugin: {
@@ -418,7 +418,7 @@ function createConfig(options) {
 
     let test = [];
 
-    if (type(item[0], 'array')) {
+    if (isType(item[0], 'array')) {
       test = test.concat(item[0])
     } else {
       test.push(item[0])
@@ -465,11 +465,14 @@ class Inject {
 
 class WebpackConfig extends Inject{
 
-  constructor(){
+  constructor(options){
+    super();
+    this.options = options
   }
   
-  create(){
-    let cfg = createConfig(options);
+  create(options){
+    if (options) this.options = options
+    let cfg = createConfig(this.options);
 
     this.getCaching().forEach(e => {
       e(cfg)
@@ -477,36 +480,35 @@ class WebpackConfig extends Inject{
 
     return cfg.toConfig()
   }
+
+  addHtml(name, op={}){
+
+    let isProdMode = get(this.options, 'defaultProcessEnv.NODE_ENV') === 'production';
+
+    this.add(chain => {
+      chain.plugin(name)
+        .use(HtmlWebpackPlugin, [{
+          template: paths.appHtml,
+          ...isProdMode ? {
+            minify: {
+              removeComments: true,
+              collapseWhitespace: true,
+              removeRedundantAttributes: true,
+              useShortDoctype: true,
+              removeEmptyAttributes: true,
+              removeStyleLinkTypeAttributes: true,
+              keepClosingSlash: true,
+              minifyJS: true,
+              minifyCSS: true,
+              minifyURLs: true,
+            },
+            // minify: false
+          } : {},
+          ...op
+        }])
+    })
+  }
+
 }
-
-
-// create.html = {
-//   add: (name, op = {}) => {
-
-//     injection.add(chain => {
-//       chain.plugin(name)
-//         .use(HtmlWebpackPlugin, [{
-//           template: paths.appHtml,
-//           ...isProdMode ? {
-//             minify: {
-//               removeComments: true,
-//               collapseWhitespace: true,
-//               removeRedundantAttributes: true,
-//               useShortDoctype: true,
-//               removeEmptyAttributes: true,
-//               removeStyleLinkTypeAttributes: true,
-//               keepClosingSlash: true,
-//               minifyJS: true,
-//               minifyCSS: true,
-//               minifyURLs: true,
-//             },
-//             // minify: false
-//           } : {},
-//           ...op
-//         }])
-//     })
-
-//   },
-// }
 
 module.exports = WebpackConfig;
