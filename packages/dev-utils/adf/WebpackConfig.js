@@ -133,7 +133,7 @@ function createConfig(options) {
     mode: defaultProcessEnv.NODE_ENV,
     devtool: isProdMode ? 'cheap-module-source-map' : 'source-map',
     entry: {
-      app: [paths.entryPoint]
+      // app: [paths.entryPoint]
     },
     target: options.target,
     output: {
@@ -300,26 +300,26 @@ function createConfig(options) {
     },
 
     plugin: {
-      HtmlWebpackPlugin: {
-        plugin: HtmlWebpackPlugin,
-        args: [{
-          template: paths.appHtml,
-          ...isProdMode ? {
-            minify: {
-              removeComments: true,
-              collapseWhitespace: true,
-              removeRedundantAttributes: true,
-              useShortDoctype: true,
-              removeEmptyAttributes: true,
-              removeStyleLinkTypeAttributes: true,
-              keepClosingSlash: true,
-              minifyJS: true,
-              minifyCSS: true,
-              minifyURLs: true,
-            },
-          } : {}
-        }]
-      },
+      // HtmlWebpackPlugin: {
+      //   plugin: HtmlWebpackPlugin,
+      //   args: [{
+      //     template: paths.appHtml,
+      //     ...isProdMode ? {
+      //       minify: {
+      //         removeComments: true,
+      //         collapseWhitespace: true,
+      //         removeRedundantAttributes: true,
+      //         useShortDoctype: true,
+      //         removeEmptyAttributes: true,
+      //         removeStyleLinkTypeAttributes: true,
+      //         keepClosingSlash: true,
+      //         minifyJS: true,
+      //         minifyCSS: true,
+      //         minifyURLs: true,
+      //       },
+      //     } : {}
+      //   }]
+      // },
       PnpWebpackPlugin: {
         plugin: PnpWebpackPlugin
       },

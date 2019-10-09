@@ -3,7 +3,7 @@
 // op
 //  paraller: is run promise paraller
 //  
-export default function ordered(arr, op = {}) {
+export default function ordered(arr, op = {}, ...args) {
   let { parallel, beforeEach, afterEach, waitingEach } = op;
 
   let p = Promise.resolve(true);
@@ -11,8 +11,8 @@ export default function ordered(arr, op = {}) {
   if (parallel) {
     arr = arr.map(fn => {
 
-      let out = fn()
-      beforeEach && beforeEach(out.info)
+      let out = fn(...args)
+      beforeEach && beforeEach(out.__info)
       return () => out
     })
   }
@@ -20,11 +20,11 @@ export default function ordered(arr, op = {}) {
   return arr.reduce((acc, fn) => {
 
     return acc.then(() => {
-      let out = fn();
+      let out = fn(...args);
       if (!parallel) {
-        beforeEach && beforeEach(out.info)
+        beforeEach && beforeEach(out.__info)
       }
-      waitingEach && waitingEach(out.info)
+      waitingEach && waitingEach(out.__info)
       return out
     })
       .then(res => {

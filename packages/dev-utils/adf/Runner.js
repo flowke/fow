@@ -10,6 +10,9 @@ const {toArr, isType} = require('@fow/visitor');
 const ChunkBlock = require('../chunkBlock');
 const fse = require('fs-extra');
 const runnerConfig = require('./config/runner.config');
+const MultiPagesPlugin = require('./MultiPagesPlugin');
+const SinglePagePlugin = require('./SinglePagePlugin');
+const MayPath = require('../mayPath');
 
 let { 
   appRoot,
@@ -20,26 +23,58 @@ class Runner extends Hooks{
 
   constructor(){
     super();
+
+    this.runnerConfig = runnerConfig;
+    this.options = null
+    this.webpackConfig = new WebpackConfig();
+    this.appFiles = [];
+    this.mayPath = new MayPath({
+      root: appRoot
+    });
+
     this.setHooks({
       patchSchema: ['patchFn'],
       addDefaultOption: ['defaulter'],
       chainWebpack: ['chain'],
-      entry: ['chunkBlock']
+      mayPath: ['addPath'],
+      singlePage: ['entry','runnerConfig', 'webpackConfig'],
+      multiPages: ['entries','runnerConfig', 'webpackConfig']
     });
-    this.appFiles = [];
+
+    new MultiPagesPlugin(this);
+    new SinglePagePlugin(this);
+    
   }
 
   run(userOptions){
     // generate Options
     let options = this.getOptions(userOptions);
+    this.options = options;
 
-    let entry = new ChunkBlock();
+    this.hooks.mayPath.call(this.mayPath.add.bind(this.mayPath));
 
-    this.hooks.entry.call(entry);
+    let p = null;
 
-    let entryCode = entry.genCode();
+    if (options.multiPages===true){
 
-    this.addAppFile('.entry.js')
+
+      p = this.hooks.multiPages.asyncParallelCall();
+
+    }else{
+      let entry = new ChunkBlock();
+
+      p = this.hooks.singlePage.asyncParallelCall(entry, )
+      .then(()=>{
+        return [{app: entry}]
+      })
+      
+    }
+
+    p.then((chunks)=>{
+      this.generateApp();
+    })
+
+    
 
 
     
@@ -111,6 +146,7 @@ class Runner extends Hooks{
 
   }
 
+  // 生成文件任务, 返回 promise list
   generateApp(){
     let tasks = this.appFiles.map(f=>{
       return fse.outputFile(
@@ -124,10 +160,9 @@ class Runner extends Hooks{
 
   }
 
-  
 
 }
 
 function getMultiEntry(){
-  
+
 }

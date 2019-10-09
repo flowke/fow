@@ -1,11 +1,14 @@
 const glob = require('globby');
 
 module.exports = class MayPath{
-  constructor(options){
-    this.options = options || {
+  constructor(options={}){
+    this.options =  {
       onlyFiles: true,
+      ...options
     }
-    this.files = {}
+    this.files = {};
+
+    this.paths = {}
   }
 
   add(name, pattern, options={}, callback){
@@ -39,7 +42,7 @@ module.exports = class MayPath{
 
     }
 
-    return obj
+    return this.paths = obj
   }
 
 }
