@@ -10,6 +10,7 @@ const ora = require('ora');
 const chalk = require('chalk');
 const { isType } = require('@fow/visitor/type');
 const get = require('@fow/visitor/get');
+const webpackMerge = require('webpack-merge');
 
 
 
@@ -467,7 +468,8 @@ class WebpackConfig extends Inject{
 
   constructor(options){
     super();
-    this.options = options
+    this.options = options;
+    this.mergeList = [];
   }
   
   create(options){
@@ -478,7 +480,17 @@ class WebpackConfig extends Inject{
       e(cfg)
     });
 
-    return cfg.toConfig()
+    let config = cfg.toConfig();
+
+    if (this.mergeList.length){
+      config = webpackMerge(config, ...this.mergeList)
+    }
+
+    return config
+  }
+
+  merge(obj){
+    this.mergeList.push(obj);
   }
 
   addHtml(name, op={}){

@@ -10,15 +10,15 @@ const {toArr, isType} = require('@fow/visitor');
 const ChunkBlock = require('../chunkBlock');
 const fse = require('fs-extra');
 const runnerConfig = require('./config/runner.config');
-const MultiPagesPlugin = require('./MultiPagesPlugin');
-const SinglePagePlugin = require('./SinglePagePlugin');
 const MayPath = require('../mayPath');
+const glob = require('globby');
 
 let { 
   appRoot,
   tempFilePath
 } = runnerConfig;
 
+// entryNode: {name, compPath: 相对于 page, entry}
 class Runner extends Hooks{
 
   constructor(){
@@ -28,6 +28,7 @@ class Runner extends Hooks{
     this.options = null
     this.webpackConfig = new WebpackConfig();
     this.appFiles = [];
+    this.entryNodes = [];
     this.mayPath = new MayPath({
       root: appRoot
     });
@@ -36,15 +37,15 @@ class Runner extends Hooks{
       patchSchema: ['patchFn'],
       addDefaultOption: ['defaulter'],
       chainWebpack: ['chain'],
-      mayPath: ['addPath'],
-      singlePage: ['entry','runnerConfig', 'webpackConfig'],
-      multiPages: ['entries','runnerConfig', 'webpackConfig']
+      mayPath: ['addPathFn'],
+      entry: ['entry','runnerConfig', 'webpackConfig'],
+      entries: ['entries','runnerConfig', 'webpackConfig'],
+      emitFile: ['addAppFileFn'],
+      webpack: ['chain', 'merge']
     });
-
-    new MultiPagesPlugin(this);
-    new SinglePagePlugin(this);
     
   }
+
 
   run(userOptions){
     // generate Options
@@ -53,43 +54,85 @@ class Runner extends Hooks{
 
     this.hooks.mayPath.call(this.mayPath.add.bind(this.mayPath));
 
-    let p = null;
+    let mayPath = this.mayPath.sync();
 
     if (options.multiPages===true){
-
-
-      p = this.hooks.multiPages.asyncParallelCall();
-
+      this.entryNodes = this.defineEntries();
+      this.hooks.entries.call(this.entryNodes, this.runnerConfig, this.webpackConfig);
     }else{
-      let entry = new ChunkBlock();
-
-      p = this.hooks.singlePage.asyncParallelCall(entry, )
-      .then(()=>{
-        return [{app: entry}]
-      })
-      
+      // 定义单入口
+      this.entryNodes = this.defineEntry();
+      this.hooks.entry.call(this.entryNodes, this.runnerConfig, this.webpackConfig);
     }
 
-    p.then((chunks)=>{
-      this.generateApp();
+    // 生成文件 start
+
+    // 注册要生成的文件
+    // 注册 webpack 配置
+    this.entryNodes.forEach(node=>{
+
+      let path = path.resolve(appRoot, tempFilePath, `.${node.name}.js`);
+
+      this.addAppFile(path, node.entry.genCode());
+
+      this.webpackConfig.add(chain=>{
+        chain.entry(node.name)
+          .add(path)
+      });
+
+      let htmlPath = path.resolve(appRoot, `src/pages/${node.name}/index.html`);
+      htmlPath = fse.existsSync(htmlPath) ? htmlPath :'';
+
+      let htmlOption = {
+        filename: `${e.name}.html`,
+        template: htmlPath ? htmlPath : undefined,
+        // chunks: [e.name, 'vendors'],
+        excludeChunks: pageCfg.reduce((acc, elt) => {
+          if (e.name !== elt.name) acc.push(elt.name)
+          return acc
+        }, [])
+      };
+
+      this.webpackConfig.addHtml(`html${node.name}`, htmlOption)
+      this.webpackConfig.addHtml(`multiEntry`,{
+        chunks: [],
+        pages: pageCfg.map(e => e.name + '.html'),
+        template: path.resolve(__dirname, 'multi.html'),
+      })
+
+    });
+
+    // 生成自定义文件
+    this.hooks.emitFile.call((name, code)=>{
+      this.addAppFile(path.resolve(appRoot, tempFilePath, `.${name}.js`), code)
     })
 
-    
+     // 生成文件 end
+    // 修改 patch webpack
+    this.hooks.webpack.call(this.webpackConfig);
 
+    return this.generateApp();
 
-    
+  }
+
+  defineEntry(){
+    throw new Error('The method "defineEntry" must be implemented');
+  }
+
+  defineEntries(){
+    throw new Error('The method "defineEntries" must be implemented');
   }
 
   // path: string, [string...]
   // isTemp: 是否放到 temp 目录
-  addAppFile(path, code, isTemp=true){
-    if (!isType(path, 'array')) path = [path];
+  addAppFile(path, code){
+    // if (!isType(path, 'array')) path = [path];
 
-    if (isTemp) path.unshift(tempFilePath)
+    // if (isTemp) path.unshift(tempFilePath)
     this.appFiles.push({
       path,
       code
-    })
+    });
   }
 
   // 验证不通过会抛错
@@ -150,7 +193,7 @@ class Runner extends Hooks{
   generateApp(){
     let tasks = this.appFiles.map(f=>{
       return fse.outputFile(
-        path.resolve(runnerConfig.appRoot , ...f.path)
+        f.path
         , 
         f.code
       )
@@ -160,9 +203,5 @@ class Runner extends Hooks{
 
   }
 
-
-}
-
-function getMultiEntry(){
 
 }
