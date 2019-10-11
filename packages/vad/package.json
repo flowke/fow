@@ -16,6 +16,7 @@
     "@babel/generator": "^7.5.5",
     "@babel/parser": "^7.5.5",
     "@babel/traverse": "^7.5.5",
-    "@babel/types": "^7.5.5"
+    "@babel/types": "^7.5.5",
+    "@fow/dev-utils": "^1.0.0"
   }
 }

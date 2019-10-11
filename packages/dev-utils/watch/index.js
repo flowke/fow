@@ -95,7 +95,7 @@ module.exports = class Watch{
 
   run(options={}){
     if(this.hasRun){
-      this.close(name)
+      this.close()
     }
 
     this.hasRun = true;

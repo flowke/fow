@@ -2,6 +2,7 @@
 const WebpackDevServer = require('webpack-dev-server');
 const chalk = require('chalk');
 const EventEmitter = require('events');
+const webpack = require('webpack');
 
 const {
   useValidPort,
@@ -9,7 +10,7 @@ const {
 } = require('./utils/devServerUtils');
 
 module.exports = class Server extends EventEmitter{
-  constructor(webpack) {
+  constructor() {
     this.webpack = webpack;
     this.validPort = null;
     this.devServer = null;
@@ -94,12 +95,12 @@ module.exports = class Server extends EventEmitter{
   // start
   start(devOption, webpackConfig) {
 
-    process.on('warning', m => {
-      console.log();
-      console.log(chalk.yellow('warning on process:'));
-      console.log();
-      console.log(chalk.yellow.bold(m.message));
-    })
+    // process.on('warning', m => {
+    //   console.log();
+    //   console.log(chalk.yellow('warning on process:'));
+    //   console.log();
+    //   console.log(chalk.yellow.bold(m.message));
+    // })
 
     this.run(devOption, webpackConfig);
     

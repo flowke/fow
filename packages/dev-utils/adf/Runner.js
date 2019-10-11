@@ -12,6 +12,10 @@ const fse = require('fs-extra');
 const runnerConfig = require('./config/runner.config');
 const MayPath = require('../mayPath');
 const glob = require('globby');
+const DevServer = require('../devServer/server');
+const Watcher = require('../watch');
+const rimraf = require('rimraf');
+const webpack = require('webpack');
 
 let { 
   appRoot,
@@ -19,7 +23,8 @@ let {
 } = runnerConfig;
 
 // entryNode: {name, compPath: 相对于 page, entry}
-class Runner extends Hooks{
+// watcher: [{type: 'restart'/'reemit', callback, paths, events}]
+module.exports = class Runner extends Hooks{
 
   constructor(){
     super();
@@ -27,8 +32,11 @@ class Runner extends Hooks{
     this.runnerConfig = runnerConfig;
     this.options = null
     this.webpackConfig = new WebpackConfig();
-    this.appFiles = [];
-    this.entryNodes = [];
+    this.appFiles = []; // 有什么样的文件会生成
+    this.entryNodes = []; // 框架继承者实现, 决定会有哪些 entry
+    this.devServer = null;
+    this.watches = [];
+    this.watcher = null;
     this.mayPath = new MayPath({
       root: appRoot
     });
@@ -41,20 +49,20 @@ class Runner extends Hooks{
       entry: ['entry','runnerConfig', 'webpackConfig'],
       entries: ['entries','runnerConfig', 'webpackConfig'],
       emitFile: ['addAppFileFn'],
-      webpack: ['chain', 'merge']
+      webpack: ['webpackConfig'],
+      watch: ['addWatchFn']
     });
     
   }
 
-
-  run(userOptions){
+  // ready 之后
+  ready(){
     // generate Options
     let options = this.getOptions(userOptions);
     this.options = options;
 
     this.hooks.mayPath.call(this.mayPath.add.bind(this.mayPath));
-
-    let mayPath = this.mayPath.sync();
+    this.mayPath.sync();
 
     if (options.multiPages===true){
       this.entryNodes = this.defineEntries();
@@ -111,8 +119,6 @@ class Runner extends Hooks{
     // 修改 patch webpack
     this.hooks.webpack.call(this.webpackConfig);
 
-    return this.generateApp();
-
   }
 
   defineEntry(){
@@ -121,6 +127,15 @@ class Runner extends Hooks{
 
   defineEntries(){
     throw new Error('The method "defineEntries" must be implemented');
+  }
+  // 获取
+  getUserOptions(){
+    throw new Error('The method "defineEntries" must be implemented');
+  }
+
+  getMayPath(r){
+    if (this.mayPath) return this.mayPath.sync(r);
+    return {}
   }
 
   // path: string, [string...]
@@ -135,8 +150,16 @@ class Runner extends Hooks{
     });
   }
 
+  addWatch(obj={}){
+    this.watches.push(Object.assign({},{
+      type: 'restart',
+    },obj))
+  }
+
   // 验证不通过会抛错
-  getOptions(userOptions){
+  getOptions(){
+
+    let userOptions = this.getUserOptions();
 
     // patch schema
     this.hooks.patchSchema.call((s={}) => {
@@ -185,12 +208,8 @@ class Runner extends Hooks{
     
   }
 
-  generateWebpackConfig(options) {
-
-  }
-
   // 生成文件任务, 返回 promise list
-  generateApp(){
+  emitFiles(){
     let tasks = this.appFiles.map(f=>{
       return fse.outputFile(
         f.path
@@ -201,6 +220,120 @@ class Runner extends Hooks{
 
     return Promise.all(tasks)
 
+  }
+
+  prepareFilesAndWebpack(callback = f => f) {
+    this.ready();
+
+    this.emitFiles()
+      .then(done => {
+        return this.webpackConfig.create(this.options);
+      })
+      .then(config => {
+        callback(config);
+
+      });
+  }
+
+  startDev(){
+    
+    this.prepareFilesAndWebpack(config => {
+      let server = this.devServer = new DevServer();
+
+      server.start(this.options.devServer, config);
+
+      this.watch();
+
+    });
+
+
+  }
+
+  reStartDev(){
+
+    if(this.watcher){
+      this.watcher.close('all', true);
+    }
+    if(this.devServer){
+      this.devServer.close();
+    }
+
+    this.options = null;
+    this.webpackConfig = new WebpackConfig();
+    this.appFiles = [];
+    this.entryNodes = [];
+    this.devServer = null;
+    this.watches = [];
+    this.watcher = null;
+    this.mayPath = new MayPath({root: appRoot});
+
+    this.startDev();
+
+  }
+
+  reEmitFiles(){
+    this.options = null;
+    this.appFiles = [];
+    this.entryNodes = [];
+    this.mayPath = new MayPath({ root: appRoot });
+
+    this.prepareFilesAndWebpack()
+  }
+
+  watch(){
+    this.hooks.watch.call(this.addWatch.bind(this));
+    this.watcher = new Watcher();
+    this.watches.forEach(node=>{
+
+      if(node.type==='restart'){
+        this.watcher.add(node.name, node.paths, node.events, ()=>{
+          this.reStartDev();
+        })
+      }
+
+      if(node.type==='reemit'){
+        this.reEmitFiles();
+      }
+
+    })
+  }
+
+  build(cb){
+    this.prepareFilesAndWebpack(config=>{
+      rimraf.sync(this.options.paths.outputPath + '/**');
+      webpack(config, (err,stats)=>{
+
+        if (cb) {
+          cb(err, stats);
+          return;
+        }
+
+        if (err) {
+          console.error(err.stack || err);
+          if (err.details) {
+            console.error(err.details);
+          }
+          return;
+        }
+
+        const info = stats.toJson();
+
+        if (stats.hasErrors()) {
+          console.error(info.errors);
+        }
+
+        if (stats.hasWarnings()) {
+          console.warn(info.warnings);
+        }
+
+        if (!err) {
+          console.log(stats.toString({
+            colors: true
+          }))
+        }
+
+      })
+    })
   }
 
 

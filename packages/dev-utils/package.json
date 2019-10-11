@@ -37,7 +37,7 @@
     "pnp-webpack-plugin": "^1.5.0",
     "shelljs": "^0.8.3",
     "swig": "^1.4.2",
-    "webpack": "^4.39.2",
+    "webpack": "^4.41.0",
     "webpack-chain": "^6.0.0",
     "webpack-dev-server": "^3.8.0",
     "webpack-merge": "^4.2.2"

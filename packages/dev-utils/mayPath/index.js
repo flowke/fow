@@ -27,7 +27,10 @@ module.exports = class MayPath{
     }
   }
 
-  sync(){
+  sync(reFresh){
+
+    if (reFresh && Object.keys(this.paths).length) return this.paths;
+
     let obj = {}
     for(let name in this.files){
       let info = this.files[name];
@@ -37,7 +40,10 @@ module.exports = class MayPath{
       if(info.callback){
         obj[name] = info.callback({files,name})
       }else{
-        obj[name] = files
+        obj[name] = {
+          has: !!files.length,
+          files
+        }
       }
 
     }

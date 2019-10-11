@@ -62,10 +62,10 @@ exports.parseUrl = function(protocol, host, port){
 }
 
 // 期望得到一个可用的端口
-exports.useValidPort = (port, hostname)=>{
+exports.useValidPort = (port, hostname, directlyUse=true)=>{
   return detectPort(port, hostname)
   .then(validPort=>{
-    if(validPort!==port){
+    if (validPort !== port && !directlyUse){
       return inquirerPort(port, validPort)
     }else{
       return validPort
