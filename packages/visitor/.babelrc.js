@@ -10,7 +10,7 @@ module.exports = function (api) {
       [
         require.resolve("@babel/preset-env"),
         {
-          modules: version === 'es' ? false : 'auto'
+          modules: version === 'es' ? false : 'cjs'
         }
       ]
     ]

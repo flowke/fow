@@ -3,6 +3,7 @@ const WebpackDevServer = require('webpack-dev-server');
 const chalk = require('chalk');
 const EventEmitter = require('events');
 const webpack = require('webpack');
+const openBrowser = require('./utils/openBrowser');
 
 const {
   useValidPort,
@@ -11,12 +12,13 @@ const {
 
 module.exports = class Server extends EventEmitter{
   constructor() {
+    super();
     this.webpack = webpack;
     this.validPort = null;
     this.devServer = null;
 
     this.hooks = {
-      firstTimeBuildDone: (parsedUrl) => this.emit('listen', parsedUrl),
+      launched: (parsedUrl) => this.emit('launched', parsedUrl),
       listened: (parsedUrl) => this.emit('listen', parsedUrl)
     }
   }
@@ -50,8 +52,11 @@ module.exports = class Server extends EventEmitter{
 
         if (!firstTimeListen) return;
         firstTimeListen = false;
+        
+        printBrowserOpenInfo(parsedUrl)
+        openBrowser(parsedUrl.localUrl)
 
-        this.hooks.firstTimeBuildDone(parsedUrl);
+        this.hooks.launched(parsedUrl);
       })
 
     });
@@ -82,7 +87,7 @@ module.exports = class Server extends EventEmitter{
         this.devServer = this.serve(valiPort, devOption, webpackConfig);
       })
       .catch(e => {
-
+        console.log();
         console.log(chalk.cyan('stop launching the dev server.'));
         console.log('because:\n');
         console.log(e);
@@ -120,5 +125,21 @@ module.exports = class Server extends EventEmitter{
   close(){
     this.devServer && this.devServer.close();
   }
+
+}
+
+function printBrowserOpenInfo(urls) {
+
+  console.log();
+  console.log(chalk.cyan('opening the browser at:'));
+  console.log();
+  console.log(
+    `  ${chalk.bold('Local:')}            ${urls.localUrlForTerminal}`
+  );
+  console.log(
+    `  ${chalk.bold('On Your Network:')}  ${urls.lanUrlForTerminal}`
+  );
+
+  console.log();
 
 }

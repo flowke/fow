@@ -8,9 +8,10 @@ const babelConfig = require('./config/babel.config');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const ora = require('ora');
 const chalk = require('chalk');
-const { isType } = require('@fow/visitor/type');
-const get = require('@fow/visitor/get');
+const { isType } = require('@fow/visitor/lib/type');
+const get = require('@fow/visitor/lib/get').default;
 const webpackMerge = require('webpack-merge');
+
 
 
 
@@ -192,7 +193,7 @@ function createConfig(options) {
             // only handle app src js
             js: {
               test: /\.(js)$/,
-              include: [paths.appSrc, /puta\/lib\/index/],
+              exclude: [/node_modules/],
               use: {
                 'babel': {
                   loader: require.resolve('babel-loader'),
@@ -477,30 +478,36 @@ class WebpackConfig extends Inject{
     let cfg = createConfig(this.options);
 
     this.getCaching().forEach(e => {
-      e(cfg)
+      e(cfg, options)
     });
 
     let config = cfg.toConfig();
 
     if (this.mergeList.length){
-      config = webpackMerge(config, ...this.mergeList)
+      config = webpackMerge(config, ...this.mergeList.map(fn => fn(options)))
     }
 
     return config
   }
 
-  merge(obj){
-    this.mergeList.push(obj);
+  merge(fn=f=>{}){
+    this.mergeList.push(fn);
+  }
+
+  // 新增 entry
+  addEntry(name, path){
+    this.add(chain=>{
+      chain.entry(name).add(path)
+    })
   }
 
   addHtml(name, op={}){
 
     let isProdMode = get(this.options, 'defaultProcessEnv.NODE_ENV') === 'production';
 
-    this.add(chain => {
+    this.add((chain, options) => {
       chain.plugin(name)
         .use(HtmlWebpackPlugin, [{
-          template: paths.appHtml,
           ...isProdMode ? {
             minify: {
               removeComments: true,

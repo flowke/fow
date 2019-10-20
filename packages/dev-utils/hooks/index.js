@@ -36,15 +36,17 @@ class Hook extends EventEmitter{
   }
 
   onCall(msg, fn){
-    // this.on(this.name, fn)
+    if(typeof msg === 'function') {
+      fn = msg;
+      msg = ''
+    }
     this.on(this.name, (...args)=>{
       // return fn(...args);
       try {
         return fn.call(undefined, ...args)
       } catch (error) {
-        this.emit('error', new Error(`Error: ${msg}\n ${error.message}`))
+        this.emit('error', new Error(`Hook-Error: ${msg}\n message: ${error.message}`))
       }
-      
     });
   }
 

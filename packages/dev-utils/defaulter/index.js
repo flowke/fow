@@ -111,5 +111,7 @@ module.exports = class Defaulter{
 
     }
 
+    return options
+
   }
 }

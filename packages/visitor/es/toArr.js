@@ -6,56 +6,106 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 // resolve object's values, keys
 export default function toArr(obj) {
-  return new Value().generate(obj);
+  var generate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+  var v = new Value(obj);
+  if (generate) v.generate();
+  return v;
 }
 
 var Value =
 /*#__PURE__*/
 function () {
   function Value() {
+    var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
     _classCallCheck(this, Value);
 
+    this.__rowValue = obj;
+    this.__hasGenerate = false;
     this.keys = [];
     this.values = [];
     this.entries = [];
   }
 
   _createClass(Value, [{
+    key: "get",
+    value: function get() {
+      if (!this.__hasGenerate) this.generate();
+      return this;
+    }
+  }, {
     key: "generate",
-    value: function generate() {
-      var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    value: function generate(fn) {
+      var _this = this;
 
-      for (var key in obj) {
-        var elt = obj[key];
-        this.keys.push(key);
-        this.values.push(elt);
-        this.arr.push([key, elt]);
-      }
+      eachObj(this.__rowValue, function (key, value, i) {
+        _this.keys.push(key);
 
+        _this.values.push(value);
+
+        _this.arr.push([key, value]);
+
+        fn && fn(key, value, i);
+      });
+      this.__hasGenerate = true;
       return this;
     }
   }, {
     key: "forEach",
     value: function forEach(fn) {
-      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'entries';
-      var arr = this[type];
+      var result = true;
 
-      for (var index = 0; index < arr.length; index++) {
-        var e = arr[index];
-        if (fn(e[0], e[1], i) === false) return false;
+      if (this.__hasGenerate) {
+        retult = eachArr(this.entries, function (e, i) {
+          return fn(e[0], e[1], i);
+        });
+      } else {
+        var hasFalse = false;
+        this.generate(function (key, elt, i) {
+          if (hasFalse) result = false;
+          hasFalse = fn(key, elt, i);
+        });
       }
 
-      return true;
+      return result;
     }
   }, {
     key: "reduce",
     value: function reduce(fn, init) {
-      var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'entries';
-      this[type].reduce(function (accu, e, i) {
-        return fn(accu, e[0], e[1], i);
-      }, init);
+      if (!this.__hasGenerate) {
+        var value = init;
+        this.generate(function (key, val, i) {
+          value = fn(key, val, i);
+        });
+        return value;
+      } else {
+        return this.entries.reduce(function (accu, e, i) {
+          return fn(accu, e[0], e[1], i);
+        }, init);
+      }
     }
   }]);
 
   return Value;
 }();
+
+function eachObj(obj, fn) {
+  var i = 0;
+
+  for (var key in obj) {
+    var rut = fn(key, obj[key], i);
+    if (rut === false) return false;
+    i++;
+  }
+
+  return true;
+}
+
+function eachArr(arr, fn) {
+  for (var index = 0; index < arr.length; index++) {
+    var e = arr[index];
+    if (fn(e, i) === false) return false;
+  }
+
+  return true;
+}

@@ -1,13 +1,12 @@
 // 控制 App 文件的生成
-
+const path = require('path');
 const Hooks = require('../hooks');
-const schema = require('./config/BaseOptionsSchema');
+const schema = require('./config/OptionsSchema');
 const validate = require('../validate');
 const Defaulter = require('./DefaultOptions');
 const WebpackConfig = require('./WebpackConfig');
 const jsonmergepatch = require('json-merge-patch');
 const {toArr, isType} = require('@fow/visitor');
-const ChunkBlock = require('../chunkBlock');
 const fse = require('fs-extra');
 const runnerConfig = require('./config/runner.config');
 const MayPath = require('../mayPath');
@@ -22,13 +21,14 @@ let {
   tempFilePath
 } = runnerConfig;
 
-// entryNode: {name, compPath: 相对于 page, entry}
+// entryNode=== chunk: {name, emitPath, [htmlTemplatePath,htmlName], genCode()}
 // watcher: [{type: 'restart'/'reemit', callback, paths, events}]
 module.exports = class Runner extends Hooks{
 
   constructor(){
     super();
 
+    this.tempDir = path.resolve(appRoot, tempFilePath)
     this.runnerConfig = runnerConfig;
     this.options = null
     this.webpackConfig = new WebpackConfig();
@@ -44,11 +44,9 @@ module.exports = class Runner extends Hooks{
     this.setHooks({
       patchSchema: ['patchFn'],
       addDefaultOption: ['defaulter'],
-      chainWebpack: ['chain'],
       mayPath: ['addPathFn'],
       entry: ['entry','runnerConfig', 'webpackConfig'],
-      entries: ['entries','runnerConfig', 'webpackConfig'],
-      emitFile: ['addAppFileFn'],
+      emitFile: ['addAppFileFn', 'tempDir'],
       webpack: ['webpackConfig'],
       watch: ['addWatchFn']
     });
@@ -58,62 +56,42 @@ module.exports = class Runner extends Hooks{
   // ready 之后
   ready(){
     // generate Options
-    let options = this.getOptions(userOptions);
+    let options = this.getOptions();
+    
     this.options = options;
 
     this.hooks.mayPath.call(this.mayPath.add.bind(this.mayPath));
     this.mayPath.sync();
 
-    if (options.multiPages===true){
-      this.entryNodes = this.defineEntries();
-      this.hooks.entries.call(this.entryNodes, this.runnerConfig, this.webpackConfig);
-    }else{
-      // 定义单入口
-      this.entryNodes = this.defineEntry();
-      this.hooks.entry.call(this.entryNodes, this.runnerConfig, this.webpackConfig);
-    }
+    this.entryNodes = this.defineEntry();
+    this.hooks.entry.call(this.entryNodes, this.runnerConfig, this.webpackConfig);
 
     // 生成文件 start
-
     // 注册要生成的文件
     // 注册 webpack 配置
     this.entryNodes.forEach(node=>{
 
-      let path = path.resolve(appRoot, tempFilePath, `.${node.name}.js`);
 
-      this.addAppFile(path, node.entry.genCode());
+      this.addAppFile(node.emitPath, node.genCode());
 
-      this.webpackConfig.add(chain=>{
-        chain.entry(node.name)
-          .add(path)
-      });
+      this.webpackConfig.addEntry(node.name, node.emitPath);
 
-      let htmlPath = path.resolve(appRoot, `src/pages/${node.name}/index.html`);
-      htmlPath = fse.existsSync(htmlPath) ? htmlPath :'';
+      if (node.htmlTemplatePath){
+        let htmlOption = {
+          filename: `${node.htmlName || node.name}.html`,
+          template: node.htmlTemplatePath,
+          excludeChunks: this.entryNodes.filter(e=>e.name !== node.name)
+        };
 
-      let htmlOption = {
-        filename: `${e.name}.html`,
-        template: htmlPath ? htmlPath : undefined,
-        // chunks: [e.name, 'vendors'],
-        excludeChunks: pageCfg.reduce((acc, elt) => {
-          if (e.name !== elt.name) acc.push(elt.name)
-          return acc
-        }, [])
-      };
-
-      this.webpackConfig.addHtml(`html${node.name}`, htmlOption)
-      this.webpackConfig.addHtml(`multiEntry`,{
-        chunks: [],
-        pages: pageCfg.map(e => e.name + '.html'),
-        template: path.resolve(__dirname, 'multi.html'),
-      })
+        this.webpackConfig.addHtml(`html${node.name}`, htmlOption)
+      }
 
     });
 
     // 生成自定义文件
-    this.hooks.emitFile.call((name, code)=>{
-      this.addAppFile(path.resolve(appRoot, tempFilePath, `.${name}.js`), code)
-    })
+    this.hooks.emitFile.call((chunk)=>{
+      this.addAppFile(chunk.emitPath, chunk.genCode())
+    }, this.tempDir)
 
      // 生成文件 end
     // 修改 patch webpack
@@ -125,14 +103,11 @@ module.exports = class Runner extends Hooks{
     throw new Error('The method "defineEntry" must be implemented');
   }
 
-  defineEntries(){
-    throw new Error('The method "defineEntries" must be implemented');
-  }
   // 获取
   getUserOptions(){
     throw new Error('The method "defineEntries" must be implemented');
   }
-
+  // r: 是否刷新数据
   getMayPath(r){
     if (this.mayPath) return this.mayPath.sync(r);
     return {}
@@ -141,9 +116,7 @@ module.exports = class Runner extends Hooks{
   // path: string, [string...]
   // isTemp: 是否放到 temp 目录
   addAppFile(path, code){
-    // if (!isType(path, 'array')) path = [path];
 
-    // if (isTemp) path.unshift(tempFilePath)
     this.appFiles.push({
       path,
       code
@@ -160,7 +133,7 @@ module.exports = class Runner extends Hooks{
   getOptions(){
 
     let userOptions = this.getUserOptions();
-
+    
     // patch schema
     this.hooks.patchSchema.call((s={}) => {
 
@@ -201,7 +174,7 @@ module.exports = class Runner extends Hooks{
     // add addDefaultOption
     this.hooks.addDefaultOption.call(defaulter);
     
-
+    
     let options = defaulter.generate(userOptions);
 
     return options;
@@ -230,6 +203,7 @@ module.exports = class Runner extends Hooks{
         return this.webpackConfig.create(this.options);
       })
       .then(config => {
+        
         callback(config);
 
       });

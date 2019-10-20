@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
 const Create = require('@fow/dev-utils/create');
-
+const VueRunner = require('../VueRunner');
 const yargs = require('yargs');
 
 yargs
   .alias('h', 'help')
   .alias('V', 'version')
   .command('dev', 'start devserver', {}, argv => {
-    process.env.NODE_ENV = "development"
-    require('../vue/scripts/dev')
+    process.env.NODE_ENV = "development";
+    new VueRunner().startDev()
   })
   .command('build', 'build', {}, argv => {
     process.env.NODE_ENV = "production"
