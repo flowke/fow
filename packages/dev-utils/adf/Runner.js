@@ -6,7 +6,7 @@ const validate = require('../validate');
 const Defaulter = require('./DefaultOptions');
 const WebpackConfig = require('./WebpackConfig');
 const jsonmergepatch = require('json-merge-patch');
-const {toArr, isType} = require('@fow/visitor');
+const { toArr, debounceExec} = require('@fow/visitor');
 const fse = require('fs-extra');
 const runnerConfig = require('./config/runner.config');
 const MayPath = require('../mayPath');
@@ -22,7 +22,7 @@ let {
 } = runnerConfig;
 
 // entryNode=== chunk: {name, emitPath, [htmlTemplatePath,htmlName], genCode()}
-// watcher: [{type: 'restart'/'reemit', callback, paths, events}]
+// watcher: [{type: 'restart'/'reemit', callback, paths, events, option}]
 module.exports = class Runner extends Hooks{
 
   constructor(){
@@ -38,7 +38,8 @@ module.exports = class Runner extends Hooks{
     this.watches = [];
     this.watcher = null;
     this.mayPath = new MayPath({
-      root: appRoot
+      root: appRoot,
+      ignoreInitial: true,
     });
 
     this.setHooks({
@@ -124,8 +125,8 @@ module.exports = class Runner extends Hooks{
   }
 
   addWatch(obj={}){
-    this.watches.push(Object.assign({},{
-      type: 'restart',
+    this.watches.push(Object.assign({
+      
     },obj))
   }
 
@@ -214,6 +215,11 @@ module.exports = class Runner extends Hooks{
     this.prepareFilesAndWebpack(config => {
       let server = this.devServer = new DevServer();
 
+      server.on('launched', ()=>{
+        // 告知已经开启完成
+        this.hasRestarted = true
+      })
+
       server.start(this.options.devServer, config);
 
       this.watch();
@@ -257,19 +263,48 @@ module.exports = class Runner extends Hooks{
   watch(){
     this.hooks.watch.call(this.addWatch.bind(this));
     this.watcher = new Watcher();
+
+    let restart = debounceExec(700, (ctx, callback) => {
+      if (!this.hasRestarted) return;
+      // 是否已经重启完成
+      this.hasRestarted = false;
+      if (callback.length>=2){
+        callback(ctx, this.reStartDev.bind(this));
+      }else{
+        callback(ctx)
+        this.reStartDev();
+        
+      }
+      
+    });
+
+    let reemit = debounceExec(300,(cb)=>{
+      this.reEmitFiles();
+      cb(ctx)
+    });
+
     this.watches.forEach(node=>{
 
-      if(node.type==='restart'){
-        this.watcher.add(node.name, node.paths, node.events, ()=>{
-          this.reStartDev();
-        })
-      }
+      this.watcher.add({
+        name: node.name,
+        paths: node.paths,
+        events: node.events,
+        callback: ctx => {
+          let callback = node.callback || (f => f);
+          if (node.type === 'restart') {
+            restart(ctx, callback)
+          } else if (node.type === 'reemit') {
+            reemit(ctx, callback);
+          } else {
+            callback(ctx)
+          }
+        },
+        option: node.option
+      })
 
-      if(node.type==='reemit'){
-        this.reEmitFiles();
-      }
+    });
 
-    })
+    this.watcher.run()
   }
 
   build(cb){

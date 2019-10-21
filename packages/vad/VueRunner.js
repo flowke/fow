@@ -2,6 +2,7 @@ const Runner = require('@fow/dev-utils/adf/Runner');
 const path = require('path');
 const DefineEntryPlugin = require('./DefineEntryPlugin');
 const VueWebpackPlugin = require('./VueWebpackPlugin');
+const WatchConfigPlugin = require('./WatchConfigPlugin');
 
 module.exports = class VueRunner extends Runner{
   constructor(){
@@ -13,6 +14,7 @@ module.exports = class VueRunner extends Runner{
 
     new DefineEntryPlugin().run(this);
     new VueWebpackPlugin().run(this);
+    new WatchConfigPlugin().run(this);
   }
 
   defineEntry(){
@@ -28,8 +30,11 @@ module.exports = class VueRunner extends Runner{
   getUserOptions(){
 
     let configPath = path.resolve(this.runnerConfig.appRoot, 'config/config');
-    delete require.cache[configPath]
 
+    configPath = require.resolve(configPath)
+
+    delete require.cache[configPath]
+ 
     return require(configPath);
   }
 }

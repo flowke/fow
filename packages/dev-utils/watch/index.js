@@ -37,13 +37,22 @@ module.exports = class Watch{
   }
 
 
-  add(name, paths=[], events='',callback){
+  add(obj={}){
+
+    let {
+      name,
+      paths=[],
+      events='',
+      callback,
+      option = {}
+    } = obj;
 
     if (!this.watches[name]){
       this.watches[name] = {
         paths: [],
         events: [],
-        callbacks: []
+        callbacks: [],
+        option: option
       }
     }
     let node = this.watches[name];
@@ -69,7 +78,7 @@ module.exports = class Watch{
 
     if(name===undefined || name === 'all'){
       for(let key in this.watches){
-        close(key, rm)
+        close.call(this,key, rm)
       }
     }
 
@@ -105,7 +114,8 @@ module.exports = class Watch{
 
       node.watcher = chokidar.watch(node.paths,{
         ignoreInitial: true,
-        ...options
+        ...options,
+        ...node.option
       })
 
       node.events.forEach(e=>{
