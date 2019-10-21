@@ -18,8 +18,9 @@
     "@babel/plugin-syntax-jsx": "^7.2.0",
     "@babel/traverse": "^7.5.5",
     "@babel/types": "^7.5.5",
-    "@fow/dev-utils": "../dev-utils",
+    "@fow/dev-utils": "file:../dev-utils",
     "babel-plugin-transform-vue-jsx": "^4",
+    "colors": "^1.4.0",
     "vue-loader": "^15.7.1",
     "vue-template-compiler": "^2.6.10"
   }
