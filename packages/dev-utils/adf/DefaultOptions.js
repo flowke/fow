@@ -40,6 +40,7 @@ module.exports = class DfOptions extends Defaulter{
     this.set('defaultProcessEnv.NODE_ENV', 'production');
 
     this.set('webpackChain', f => f);
+    this.set('plugins', []);
 
   }
 }

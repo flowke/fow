@@ -21,6 +21,8 @@
     "@fow/dev-utils": "file:../dev-utils",
     "babel-plugin-transform-vue-jsx": "^4",
     "colors": "^1.4.0",
+    "globby": "^10.0.1",
+    "puta": "^0.2.7",
     "vue-loader": "^15.7.1",
     "vue-template-compiler": "^2.6.10"
   }

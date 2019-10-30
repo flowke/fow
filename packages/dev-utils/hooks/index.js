@@ -1,5 +1,4 @@
 const { EventEmitter } = require('events');
-const {ordered} = require('@fow/visitor');
 
 module.exports = class Hooks{
   constructor(){
@@ -27,20 +26,21 @@ class Hook extends EventEmitter{
   }
 
   // listeners
-  l(){
-    return this.listeners(this.name);
+  l(type){
+    return this.listeners(this.name +'-' +type);
   }
 
-  rowl(){
-    return this.rawListeners(this.name)
+  rowl(type){
+    return this.rawListeners(this.name + '-' + type)
   }
 
-  onCall(msg, fn){
-    if(typeof msg === 'function') {
+  baseOn(type, msg, fn){
+    if (typeof msg === 'function') {
       fn = msg;
       msg = ''
     }
-    this.on(this.name, (...args)=>{
+
+    this.on(`${this.name}-${type}`, (...args) => {
       // return fn(...args);
       try {
         return fn.call(undefined, ...args)
@@ -50,24 +50,44 @@ class Hook extends EventEmitter{
     });
   }
 
-  onAsync(msg, fn) {
-    this.onCall(msg, fn);
+  onCall(msg, fn){
+    
+    this.baseOn('onCall', msg, fn)
   }
 
-  call(...args){
-    this.emit(this.name,...args);
+  call(...args) {
+    this.emit(this.name + '-' +'onCall', ...args);
   };
 
-  asyncParallelCall(...args){
-    let l = this.l();
+  onAsync(msg, fn) {
+    this.baseOn('onAsync', msg, fn)
+  }
 
-    return ordered(l, { parallel: true}, ...args);
+  // 异步并行执行
+  asyncParallelCall(...args){
+    let l = this.l('onAsync');
+
+    l = l.map(fn=>{
+      return createFnPromise(fn,...args)
+    });
+
+    return Promise.all(l);
 
   }
-  asyncSeriesCall(...args){
-    let l = this.l();
 
-    return ordered(l, { parallel: false}, ...args);
+  // 异步穿行执行
+  asyncSeriesCall(...args){
+    let l = this.l('onAsync');
+
+    return l.reduce((acc, fn)=>{
+      return acc.then(res=>{
+        return fn(...args);
+      })
+      .catch(err=>{
+        return err
+      })
+
+    }, Promise.resolve())
 
   }
 
@@ -83,3 +103,25 @@ class Hook extends EventEmitter{
 function call(name, args){
   return new Hook(name, args);
 }
+
+function createFnPromise(fn, ...args) {
+  return new Promise((rv, rj) => {
+    let done = (err,...args) => {
+      if (!err) {
+        rv(args);
+      }
+      rj(err)
+    }
+
+    let out = fn(...args, done)
+
+    if (Object.prototype.toString.call(out) === '[object Promise]') {
+      out
+        .then(res => rv(res))
+        .catch(err => rj(err))
+    }
+  })
+}
+
+exports.Hook = Hook;
+

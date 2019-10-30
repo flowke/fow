@@ -1,18 +1,33 @@
 #!/usr/bin/env node
 
 const Create = require('@fow/dev-utils/create');
-const VueRunner = require('../VueRunner');
 const yargs = require('yargs');
+const { fork } = require('child_process');
+
+function runRunner(params) {
+  let runnerProcess = fork(__dirname+ '/../scripts/run.js',{
+    stdio: 'inherit',
+  })
+
+  runnerProcess.once('message', (msg) => {
+    if (msg === 'restart') {
+      runnerProcess.kill();
+      process.nextTick(()=>{
+        runRunner();
+      })
+    }
+  });
+
+  runnerProcess.send('start')
+}
 
 yargs
   .alias('h', 'help')
   .alias('V', 'version')
   .command('dev', 'start devserver', {}, argv => {
-    process.env.NODE_ENV = "development";
-    new VueRunner().startDev()
+    runRunner()
   })
   .command('build', 'build', {}, argv => {
-    process.env.NODE_ENV = "production"
     require('../vue/scripts/build')
   })
   .command('$0 <create-method> [dir]', 'create a project template into a directory with a template type', yargs => {
@@ -44,8 +59,6 @@ yargs
       templateFrom: 'npm',
       packageName: '@fow/vad-init-templates'
     }
-    
-    process.env.NODE_ENV = "development";
     new Create().run(config)
   })
   .help()

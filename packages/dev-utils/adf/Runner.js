@@ -28,7 +28,7 @@ module.exports = class Runner extends Hooks{
   constructor(){
     super();
 
-    this.tempDir = path.resolve(appRoot, tempFilePath)
+    this.tempDir = runnerConfig.tempFilePath();
     this.runnerConfig = runnerConfig;
     this.options = null
     this.webpackConfig = new WebpackConfig();
@@ -45,28 +45,44 @@ module.exports = class Runner extends Hooks{
     this.setHooks({
       patchSchema: ['patchFn'],
       addDefaultOption: ['defaulter'],
+      installPlugin: ['runner'],
+      afterPluginRun: [],
       mayPath: ['addPathFn'],
-      entry: ['entry','runnerConfig', 'webpackConfig'],
+      entry: ['entries','runnerConfig', 'webpackConfig'],
       emitFile: ['addAppFileFn', 'tempDir'],
       webpack: ['webpackConfig'],
-      watch: ['addWatchFn']
+      watch: ['addWatchFn'],
+      restart: [],
+      reemitApp: [],
     });
     
   }
 
-  // ready 之后
-  ready(){
-    // generate Options
+  run(){
     let options = this.getOptions();
-    
+
     this.options = options;
 
+    this.hooks.installPlugin.call(this);
+
+    options.plugins.forEach(p => {
+      p.run(this)
+    });
+
+    this.hooks.afterPluginRun.call()
+    
+    return this.generateApp(options);
+
+  }
+
+  // ready 之后
+  generateApp(options){
     this.hooks.mayPath.call(this.mayPath.add.bind(this.mayPath));
     this.mayPath.sync();
 
     this.entryNodes = this.defineEntry();
     this.hooks.entry.call(this.entryNodes, this.runnerConfig, this.webpackConfig);
-
+    
     // 生成文件 start
     // 注册要生成的文件
     // 注册 webpack 配置
@@ -91,12 +107,15 @@ module.exports = class Runner extends Hooks{
 
     // 生成自定义文件
     this.hooks.emitFile.call((chunk)=>{
+      
       this.addAppFile(chunk.emitPath, chunk.genCode())
     }, this.tempDir)
 
      // 生成文件 end
     // 修改 patch webpack
     this.hooks.webpack.call(this.webpackConfig);
+
+    return this.emitFiles();
 
   }
 
@@ -115,9 +134,8 @@ module.exports = class Runner extends Hooks{
   }
 
   // path: string, [string...]
-  // isTemp: 是否放到 temp 目录
   addAppFile(path, code){
-
+    
     this.appFiles.push({
       path,
       code
@@ -126,7 +144,8 @@ module.exports = class Runner extends Hooks{
 
   addWatch(obj={}){
     this.watches.push(Object.assign({
-      
+      // type: ''
+      // ...watchAdd
     },obj))
   }
 
@@ -184,6 +203,7 @@ module.exports = class Runner extends Hooks{
 
   // 生成文件任务, 返回 promise list
   emitFiles(){
+    
     let tasks = this.appFiles.map(f=>{
       return fse.outputFile(
         f.path
@@ -196,68 +216,56 @@ module.exports = class Runner extends Hooks{
 
   }
 
-  prepareFilesAndWebpack(callback = f => f) {
-    this.ready();
-
-    this.emitFiles()
-      .then(done => {
-        return this.webpackConfig.create(this.options);
-      })
-      .then(config => {
-        
-        callback(config);
-
-      });
-  }
-
   startDev(){
-    
-    this.prepareFilesAndWebpack(config => {
-      let server = this.devServer = new DevServer();
+    rimraf.sync(this.tempDir + '/**');
 
-      server.on('launched', ()=>{
-        // 告知已经开启完成
-        this.hasRestarted = true
+    this.run()
+      .then(()=>{
+        return this.webpackConfig.create(this.options, this.runnerConfig);
       })
+      .then(config=>{
+        
+        let server = this.devServer = new DevServer();
 
-      server.start(this.options.devServer, config);
+        server.on('launched', () => {
 
-      this.watch();
+        })
 
-    });
+        server.start(this.options.devServer, config);
 
-
+        this.watch();
+      })
   }
 
+  // 重启
   reStartDev(){
-
-    if(this.watcher){
-      this.watcher.close('all', true);
-    }
-    if(this.devServer){
-      this.devServer.close();
-    }
-
-    this.options = null;
-    this.webpackConfig = new WebpackConfig();
-    this.appFiles = [];
-    this.entryNodes = [];
-    this.devServer = null;
-    this.watches = [];
-    this.watcher = null;
-    this.mayPath = new MayPath({root: appRoot});
-
-    this.startDev();
-
+    this.hooks.restart.call()
+    
   }
 
-  reEmitFiles(){
-    this.options = null;
+  // 重新渲染 入口
+  reEmitApp(){
+
+    // 清理工作
     this.appFiles = [];
     this.entryNodes = [];
     this.mayPath = new MayPath({ root: appRoot });
+    
+    // 告知进行清理
+    this.hooks.reemitApp.asyncParallelCall()
+    .then(()=>{
+      // 重新生成 app
+      this.generateApp(this.options)
+        .then(done => {
+          cfg => {
+            console.log();
+            console.log('reemit done!');
+          }
+        })
+    })
+    .catch(err=>{
 
-    this.prepareFilesAndWebpack()
+    })
   }
 
   watch(){
@@ -265,9 +273,7 @@ module.exports = class Runner extends Hooks{
     this.watcher = new Watcher();
 
     let restart = debounceExec(700, (ctx, callback) => {
-      if (!this.hasRestarted) return;
-      // 是否已经重启完成
-      this.hasRestarted = false;
+
       if (callback.length>=2){
         callback(ctx, this.reStartDev.bind(this));
       }else{
@@ -278,8 +284,10 @@ module.exports = class Runner extends Hooks{
       
     });
 
-    let reemit = debounceExec(300,(cb)=>{
-      this.reEmitFiles();
+    let reemit = debounceExec(300,(ctx, cb)=>{
+      console.log('reemitting entries, caused:');
+      console.log(`  -> ${ctx.path}`);
+      this.reEmitApp();
       cb(ctx)
     });
 
@@ -304,44 +312,50 @@ module.exports = class Runner extends Hooks{
 
     });
 
-    this.watcher.run()
+    this.watcher.run({
+      cwd: this.runnerConfig.appRoot
+    })
   }
 
   build(cb){
-    this.prepareFilesAndWebpack(config=>{
-      rimraf.sync(this.options.paths.outputPath + '/**');
-      webpack(config, (err,stats)=>{
-
-        if (cb) {
-          cb(err, stats);
-          return;
-        }
-
-        if (err) {
-          console.error(err.stack || err);
-          if (err.details) {
-            console.error(err.details);
-          }
-          return;
-        }
-
-        const info = stats.toJson();
-
-        if (stats.hasErrors()) {
-          console.error(info.errors);
-        }
-
-        if (stats.hasWarnings()) {
-          console.warn(info.warnings);
-        }
-
-        if (!err) {
-          console.log(stats.toString({
-            colors: true
-          }))
-        }
-
+    this.run()
+      .then(() => {
+        return this.webpackConfig.create(this.options, this.runnerConfig);
       })
+      .then(config=>{
+        rimraf.sync(this.options.paths.outputPath + '/**');
+        webpack(config, (err,stats)=>{
+
+          if (cb) {
+            cb(err, stats);
+            return;
+          }
+
+          if (err) {
+            console.error(err.stack || err);
+            if (err.details) {
+              console.error(err.details);
+            }
+            return;
+          }
+
+          const info = stats.toJson();
+
+          if (stats.hasErrors()) {
+            console.error(info.errors);
+          }
+
+          if (stats.hasWarnings()) {
+            console.warn(info.warnings);
+          }
+
+          if (!err) {
+            console.log(stats.toString({
+              colors: true
+            }))
+          }
+
+        })
     })
   }
 

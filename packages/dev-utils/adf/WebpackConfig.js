@@ -13,6 +13,9 @@ const get = require('@fow/visitor/lib/get').default;
 const webpackMerge = require('webpack-merge');
 
 
+let NODE_ENV = process.env.NODE_ENV;
+let isDevMode = process.env.NODE_ENV === 'development';
+let isProdMode = process.env.NODE_ENV === 'production';
 
 
 function createConfig(options) {
@@ -25,11 +28,7 @@ function createConfig(options) {
     multiPages,
     splitRuntime
   } = options;
-
-
-  let isDevMode = defaultProcessEnv.NODE_ENV === 'development';
-  let isProdMode = defaultProcessEnv.NODE_ENV === 'production';
-
+  
   const cssRegex = /\.css$/;
   const cssModuleRegex = /\.module\.css$/;
   const sassRegex = /\.(scss|sass)$/;
@@ -132,7 +131,7 @@ function createConfig(options) {
   let cfg = new Config();
 
   cfg.merge({
-    mode: defaultProcessEnv.NODE_ENV,
+    mode: NODE_ENV,
     devtool: isProdMode ? 'cheap-module-source-map' : 'source-map',
     entry: {
       // app: [paths.entryPoint]
@@ -193,7 +192,7 @@ function createConfig(options) {
             // only handle app src js
             js: {
               test: /\.(js)$/,
-              exclude: [/node_modules/],
+              include: [],
               use: {
                 'babel': {
                   loader: require.resolve('babel-loader'),
@@ -501,9 +500,13 @@ class WebpackConfig extends Inject{
     })
   }
 
-  addHtml(name, op={}){
+  chainJs(cb){
+    this.add(chain=>{
+      cb && cb(chain.module.rule('baseLoaders').oneOf('js'))
+    })
+  }
 
-    let isProdMode = get(this.options, 'defaultProcessEnv.NODE_ENV') === 'production';
+  addHtml(name, op={}){
 
     this.add((chain, options) => {
       chain.plugin(name)

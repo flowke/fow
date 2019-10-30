@@ -180,7 +180,6 @@ module.exports = class Create{
 
     return new Promise((rv,rj)=>{
       
-      console.log();
       let p = spawn('npm', ['i'], { stdio: 'inherit' });
       p.on('exit', (c, s) => {
         

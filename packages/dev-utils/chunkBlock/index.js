@@ -20,10 +20,10 @@ module.exports = class Block {
     this.addCode('code', str, position, nl);
   }
 
-  addCaches(names){
+  addCaches(nameObjs){
     let l = Object.keys(this.caches).length;
 
-    names.forEach((n,i) => {
+    nameObjs.forEach((n,i) => {
       this.caches[n.name] = {
         name: n.name,
         indx: typeof n.indx === 'undefined' ? l + i : n.indx,
@@ -33,8 +33,8 @@ module.exports = class Block {
     });
   }
 
-  addCache(name){
-    this.addCaches([name]);
+  addCache(nameObj){
+    this.addCaches([nameObj]);
   }
 
   createCodeCache(){

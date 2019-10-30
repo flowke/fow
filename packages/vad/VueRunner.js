@@ -10,11 +10,12 @@ module.exports = class VueRunner extends Runner{
 
     this.setHooks({
       defineEntry: ['entryContainer']
-    })
+    });
 
     new DefineEntryPlugin().run(this);
     new VueWebpackPlugin().run(this);
     new WatchConfigPlugin().run(this);
+
   }
 
   defineEntry(){
@@ -28,13 +29,26 @@ module.exports = class VueRunner extends Runner{
   }
 
   getUserOptions(){
+    let cfgPath = ''
 
-    let configPath = path.resolve(this.runnerConfig.appRoot, 'config/config');
+    try {
+      let configPath = path.resolve(this.runnerConfig.appRoot, 'config/config');
 
-    configPath = require.resolve(configPath)
+      configPath = require.resolve(configPath)
 
-    delete require.cache[configPath]
- 
-    return require(configPath);
+      delete require.cache[configPath]
+
+      cfgPath = configPath
+
+    } catch (error) {
+      console.log();
+      console.log('No config file detected!');
+    }
+
+    if (cfgPath){
+      return require(cfgPath);
+    }else{
+      return {}
+    }
   }
 }

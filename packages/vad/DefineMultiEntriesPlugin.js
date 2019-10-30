@@ -12,11 +12,11 @@ module.exports = class DefignEntryPlugin {
   run(runner) {
     this.runner = runner;
 
-    this.hooks.mayPath.onCall('VueRunner', add => {
+    this.hooks.mayPath.onCall('DefignEntryPlugin', add => {
       add('pagesConfig', 'src/pages/pages.config.js');
     });
 
-    this.hooks.defineEntry.onCall('VueRunner', container => {
+    this.hooks.defineEntry.onCall('DefignEntryPlugin', container => {
       this.defineEntries(runner, container)
     })
 

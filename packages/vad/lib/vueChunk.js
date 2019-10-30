@@ -31,6 +31,7 @@ module.exports = class VueChunk extends Chunk{
     }
   }
 
+  // 设置 实例化 vm 的代码
   setNewVmCode(createCodeFn){
     this.newVmCode = createCodeFn(this.createVMCode())
   }
@@ -40,6 +41,7 @@ module.exports = class VueChunk extends Chunk{
     this.vueOptions[key] = value;
   }
 
+  // 获得创建 vm 的 code
   createVMCode(){
     return '__createVM()'
   }
@@ -53,7 +55,7 @@ module.exports = class VueChunk extends Chunk{
       name, path
     } = this.renderComp;
 
-    if(!name) throw new Error('No component name to render');
+    // if(!name) throw new Error('No component name to render');
 
     this.import('import Vue from "vue/dist/vue.runtime.esm";');
     this.code(this.newVmCode, 'post')
@@ -62,11 +64,18 @@ module.exports = class VueChunk extends Chunk{
       this.import(`import ${name} from ${JSON.stringify(path)};`)
     }
 
+    let renderCode = '';
+    if(!name){
+      renderCode = `h=>(<div>No render component file !! make sure you have <strong>src/App.vue</strong></div>)`;
+    }else{
+      renderCode = `h=>(<${name}></${name}>)`;
+    }
+
     this.code([
       'function __createVM(){',
       '  return new Vue({',
          ...vueOpCode,
-      `  render: h=>(<${name}></${name}>),`,
+      `  render: ${renderCode},`,
       '  })',
       '}\n',
     ].join('\n'))

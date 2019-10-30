@@ -1,5 +1,5 @@
 const chokidar = require('chokidar');
-
+const uuidv4 = require('uuid/v4');
 class WatchNode {
   constructor(){
     this.paths = [];
@@ -18,7 +18,8 @@ class WatchNode {
 }
 
 module.exports = class Watch{
-  constructor(){
+  constructor(baseWatchOption={}){
+    this.baseWatchOption = baseWatchOption;
     this.watches = {}
     this.commonEvents = []
     this.paths = {}
@@ -47,6 +48,8 @@ module.exports = class Watch{
       option = {}
     } = obj;
 
+    if (!name) name = 'a'+uuidv4();
+    
     if (!this.watches[name]){
       this.watches[name] = {
         paths: [],
@@ -55,6 +58,9 @@ module.exports = class Watch{
         option: option
       }
     }
+
+    
+    
     let node = this.watches[name];
 
     node.paths = node.paths.concat(paths)
@@ -71,6 +77,8 @@ module.exports = class Watch{
     if(callback){
       node.callbacks.push(callback)
     }
+
+    // console.log(this.watches);
     
   }
 
@@ -81,11 +89,13 @@ module.exports = class Watch{
         close.call(this,key, rm)
       }
     }
+    
 
     function close(name, rm){
       let w = this.watches[name];
       if (w) {
         if (w.watcher) w.watcher.close();
+        
         if (rm) delete this.watches[name]
         
       }
@@ -110,6 +120,7 @@ module.exports = class Watch{
     this.hasRun = true;
 
     for(let name in this.watches){
+      
       let node = this.watches[name];
 
       node.watcher = chokidar.watch(node.paths,{

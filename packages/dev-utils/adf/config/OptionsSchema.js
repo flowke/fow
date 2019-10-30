@@ -18,7 +18,6 @@ module.exports = {
     paths: {
       type: 'object',
       properties: {
-        'entryPoint': { type: 'string' },
         'outputPath': { type: 'string' },
         'publicPath': { type: 'string' },
         'appHtml': { type: 'string' },
@@ -78,6 +77,18 @@ module.exports = {
         { cusType: 'function' },
       ],
       errorMessage: 'should be function or object'
+    },
+    plugins: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['run'],
+        properties: {
+          run: {
+            instanceof: 'Function'
+          }
+        }
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const path = require('path');
 
 module.exports = class VueWebpackPlugin{
   constructor(){
@@ -6,13 +7,14 @@ module.exports = class VueWebpackPlugin{
   }
 
   run(runner){
-    runner.hooks.webpack.onCall(cfg=>{
+    this.runner = runner;
+    runner.hooks.webpack.onCall('VueWebpackPlugin', cfg=>{
       cfg.add(this.config.bind(this))
     })
   }
 
   config(chain){
-
+    let { runnerConfig} = this.runner;
     chain.module
       .rule('baseLoaders')
         .oneOf('js')
@@ -24,6 +26,9 @@ module.exports = class VueWebpackPlugin{
               
               return op;
             })
+            .end()
+          .include
+            .add(path.resolve(runnerConfig.appRoot, 'src'))
             .end()
           .end()
         .exclude
