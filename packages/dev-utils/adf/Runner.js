@@ -186,7 +186,11 @@ module.exports = class Runner extends Hooks{
     try {
       validate(schema, userOptions)
     } catch (error) {
-      throw error;
+      console.log();
+      console.log(error.message.red);
+      console.log();
+      process.exit()
+      
     }
     
 
@@ -239,13 +243,14 @@ module.exports = class Runner extends Hooks{
 
   // 重启
   reStartDev(){
+    rimraf.sync(this.tempDir + '/**');
     this.hooks.restart.call()
     
   }
 
   // 重新渲染 入口
   reEmitApp(){
-
+    rimraf.sync(this.tempDir + '/**');
     // 清理工作
     this.appFiles = [];
     this.entryNodes = [];
@@ -318,6 +323,7 @@ module.exports = class Runner extends Hooks{
   }
 
   build(cb){
+    rimraf.sync(this.tempDir + '/**');
     this.run()
       .then(() => {
         return this.webpackConfig.create(this.options, this.runnerConfig);

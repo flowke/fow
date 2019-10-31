@@ -1,6 +1,7 @@
 const VueRunner = require('../VueRunner');
 
 function run(){
+  
   let runner = new VueRunner()
 
   runner.startDev()
@@ -18,7 +19,5 @@ process.on('message', (msg) => {
     })
 
   }
-
-  
 
 });

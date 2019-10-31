@@ -4,7 +4,7 @@ const Create = require('@fow/dev-utils/create');
 const yargs = require('yargs');
 const { fork } = require('child_process');
 
-function runRunner(params) {
+function runDevRunner() {
   let runnerProcess = fork(__dirname+ '/../scripts/run.js',{
     stdio: 'inherit',
   })
@@ -13,7 +13,7 @@ function runRunner(params) {
     if (msg === 'restart') {
       runnerProcess.kill();
       process.nextTick(()=>{
-        runRunner();
+        runDevRunner();
       })
     }
   });
@@ -25,10 +25,11 @@ yargs
   .alias('h', 'help')
   .alias('V', 'version')
   .command('dev', 'start devserver', {}, argv => {
-    runRunner()
+    
+    runDevRunner()
   })
   .command('build', 'build', {}, argv => {
-    require('../vue/scripts/build')
+    require('../scripts/build')()
   })
   .command('$0 <create-method> [dir]', 'create a project template into a directory with a template type', yargs => {
 
