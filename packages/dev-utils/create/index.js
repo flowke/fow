@@ -10,8 +10,6 @@ const ora = require('ora');
 const swig = require('swig');
 const { spawn } = require('child_process');
 
-const {toArr } = require('@fow/visitor');
-
 require('colors')
 
 const spinner = ora();
@@ -310,14 +308,14 @@ module.exports = class Create{
   //* 基于模板配置信息, 询问出一种模板类型
   askTemplateType(templateConfig){
 
-    let cfg = toArr(templateConfig)
+
     
     return inquirer.prompt([
       {
         type: 'list',
         message: 'please choose a template',
         name: 'type',
-        choices: cfg.values.map(e=>{
+        choices: Object.values(templateConfig).map(e=>{
           return {
             name: e.name + '  ' + e.describe,
             value: e.name

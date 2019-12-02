@@ -1,6 +1,6 @@
 {
   "name": "@fow/dev-utils",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
     "@babel/preset-env": "^7.7.4",
     "@babel/traverse": "^7.7.4",
     "@babel/types": "^7.7.4",
-    "@fow/visitor": "^1.2.3",
+    "@fow/visitor": "^1.2.4",
     "ajv": "^6.10.2",
     "ajv-keywords": "^3.4.1",
     "axios": "^0.19.0",
