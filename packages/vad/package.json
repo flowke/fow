@@ -29,6 +29,7 @@
     "puta": "^0.2.7",
     "vue-loader": "^15.7.2",
     "vue-router": "^3.1.3",
-    "vue-template-compiler": "^2.6.10"
+    "vue-template-compiler": "^2.6.10",
+    "yargs": "^15.0.2"
   }
 }

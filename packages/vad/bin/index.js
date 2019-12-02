@@ -51,7 +51,7 @@ yargs
         }
       })
   }, argv => {
-
+    
     let config = {
       createMethod: argv.createMethod,
       forceCreate: argv.force,
