@@ -12,6 +12,9 @@
   },
   "author": "",
   "license": "ISC",
+  "repository": {
+    "url": "https://github.com/flowke/fow/tree/development/packages/visitor"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.5.5",
     "jest": "^24.8.0"

@@ -1,6 +1,6 @@
 {
   "name": "@fow/dev-utils",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,9 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "url": "https://github.com/flowke/fow/tree/development/packages/dev-utils"
+  },
   "dependencies": {
     "@babel/generator": "^7.7.4",
     "@babel/parser": "^7.7.4",

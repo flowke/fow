@@ -1,6 +1,6 @@
 {
   "name": "@fow/vad",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -11,6 +11,9 @@
   },
   "keywords": [],
   "author": "",
+  "repository": {
+    "url": "https://github.com/flowke/fow/tree/development/packages/vad"
+  },
   "license": "ISC",
   "dependencies": {
     "@babel/generator": "^7.7.4",

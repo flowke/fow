@@ -8,6 +8,9 @@
   },
   "keywords": [],
   "author": "Flowke",
+  "repository": {
+    "url": "https://github.com/flowke/fow/tree/development/packages/vad-init-templates"
+  },
   "templatesConfig": {
     "simple": {
       "name": "simple",
