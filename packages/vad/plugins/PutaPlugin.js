@@ -35,7 +35,7 @@ module.exports = class PutaPlugin{
     runner.hooks.watch.onCall('PutaPlugin', add=>{
       add({
         type: 'reemit',
-        paths: ['src/services/**'],
+        paths: ['src/services/**', 'src/services/'],
         events: 'change,add,unlink',
         name: 'puta_service',
         callback: (ctx)=>{
@@ -79,11 +79,11 @@ module.exports = class PutaPlugin{
           // 配置文件变量名
           let configNameCode = '';
           let putaArgsCode = ''; // 传递给实例化 puta 的参数
+          // puta.config.js 输出的东西
           let configInfo = {
-            globalConfig: null,
-            option: null,
-            config: null,
-            callback: null,
+            globalConfig: null, // 配置全局变量的访问
+            putaConfig: null,  // putaConfig
+            callback: null, //  回调函数
           }
           // puts.config 文件路径, 基于 src/services
           let configFilePath = '';
@@ -101,10 +101,9 @@ module.exports = class PutaPlugin{
             newChunk.import(`import * as ${configNameCode} from '@/services/${configFilePath}';`)
             
             // ** 传递给实例化需要的参数
-            let { option, config } = configInfo;
-            let opCode = option ? `${configNameCode}.${option}` : 'undefined';
-            let cfgCode = config ? `${configNameCode}.${config}` : 'undefined';
-            putaArgsCode = `${opCode}, ${cfgCode}`
+            let {putaConfig } = configInfo;
+            let cfgCode = putaConfig ? `${configNameCode}.${putaConfig}` : '';
+            putaArgsCode = `${cfgCode}`
           };
 
           let putaInsNameCode = `_puta_${insName}`;
@@ -117,7 +116,7 @@ module.exports = class PutaPlugin{
           let globalCode = _putaGlobalCode(putaInsNameCode, {
             req: insName === 'common' ? '$req' : `$${insName}`,
             apis: insName === 'common' ? '$apis' : `$a${upcaseCapital(insName)}`,
-            mApis: insName === 'common' ? '$r' : `$m${upcaseCapital(insName)}`,
+            mApis: insName === 'common' ? '$m' : `$m${upcaseCapital(insName)}`,
           }, configInfo.globalConfig ? `${configNameCode}.${configInfo.globalConfig}` : null);
 
           newChunk.code(globalCode)
@@ -134,10 +133,10 @@ module.exports = class PutaPlugin{
             let mNameCode = ` _putaModule_${insName}_${mName}`
 
             // 引入实例模块
-            newChunk.import(`import ${mNameCode} from "${modulePath}";`);
+            newChunk.import(`import ${mNameCode},{config as ${mNameCode}_config} from "${modulePath}";`);
 
             // **注册实例模块
-            newChunk.code(`${putaInsNameCode}.moduleRegister(${mNameCode}, '${mName}')`)
+            newChunk.code(`${putaInsNameCode}.moduleRegister(${mNameCode}, '${mName}',${mNameCode}_config)`)
 
           });
 
@@ -235,9 +234,8 @@ function parseConfigInfo(path){
 
   let obj = {
     globalConfig: null,
-    option: null,
     callback: null,
-    config: null
+    putaConfig: null
   }
 
   try {
@@ -261,13 +259,8 @@ function parseConfigInfo(path){
             obj.globalConfig = exportName;
             break;
           }
-          case 'option':
-          case 'options':{
-            obj.option = exportName;
-            break;
-          }
-          case 'config': {
-            obj.config = exportName;
+          case 'putaConfig': {
+            obj.putaConfig = exportName;
             break;
           }
           case 'callback': {

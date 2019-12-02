@@ -15,7 +15,6 @@ module.exports = class WatchConfigPlugin{
         console.log(`  file: ${ctx.path}`.green);
       }
     });
-
     })
   }
 }

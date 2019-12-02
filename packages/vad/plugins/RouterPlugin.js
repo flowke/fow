@@ -15,9 +15,9 @@ module.exports = class RouterPlugin{
 
     let {appRoot} = runner.runnerConfig;
 
-    runner.hooks.webpack.onCall(cfg=>{
+    runner.hooks.webpack.onCall('RouterPlugin-webpack',cfg=>{
 
-      if (routerLoader){
+      if (this.option.routerLoader){
         cfg.add(chain => {
           chain.module
             .rule('handleRouter')
@@ -30,7 +30,7 @@ module.exports = class RouterPlugin{
       
     });
 
-    runner.hooks.entry.onCall(chunks=>{
+    runner.hooks.entry.onCall('RouterPlugin-entry',chunks=>{
 
       let existConfig = fs.existsSync(path.resolve(appRoot, 'src/router/index.js'))
 
@@ -42,6 +42,9 @@ module.exports = class RouterPlugin{
           newChunk.import(`import Router from 'vue-router';`)
           newChunk.import(`import routerOption from '@/router/index';`)
           newChunk.code(`let router = new Router(routerOption)`)
+          // 写入别人写的和 router 相关的代码
+          newChunk.code(chunk.runRouter(newChunk, 'router'));
+          
           newChunk.code(`window.$router=router;`)
           newChunk.code(`export {`);
           newChunk.code(`  router as __$router_ins,`);
@@ -53,9 +56,9 @@ module.exports = class RouterPlugin{
           chunk.import(`import {__$router_ins, _Vue_Router} from "${relativePath}";`, 'pre');
           chunk.code('Vue.use(_Vue_Router)')
           chunk.vueOption('router', '__$router_ins');
-
-          if(!chunk.renderComp){
-            chunk.setRenderComp('router-view')
+          
+          if(!chunk.renderComp.name){
+            chunk.setRenderComp('router-view', '')
           }
 
           runner.addAppFile(emitPath, newChunk.genCode());

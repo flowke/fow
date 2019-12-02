@@ -1,9 +1,9 @@
-module.exports = class Block {
+module.exports = class Blocks {
 
   constructor() {
-    this.caches = {};
+    this.blocks = {};
 
-    this.addCaches([
+    this.addBlocks([
       {name: 'import'},
       {name: 'code'},
     ]);
@@ -20,21 +20,35 @@ module.exports = class Block {
     this.addCode('code', str, position, nl);
   }
 
+  // 遗留
   addCaches(nameObjs){
-    let l = Object.keys(this.caches).length;
+    this.addBlocks(nameObjs)
+  }
+
+  addBlocks(nameObjs){
+    let l = Object.keys(this.blocks).length;
+
+    let indx = 0;
 
     nameObjs.forEach((n,i) => {
-      this.caches[n.name] = {
+      if (typeof n.indx !== 'undefined' && typeof n.indx === 'number' && !isNaN(n.indx)) {
+        indx = n.indx;
+      }
+      this.blocks[n.name] = {
         name: n.name,
-        indx: typeof n.indx === 'undefined' ? l + i : n.indx,
+        indx: indx,
         codes: this.createCodeCache(),
         beforeCall: n.beforeCall
       }
     });
   }
-
+  // 遗留
   addCache(nameObj){
-    this.addCaches([nameObj]);
+    this.addBlock(nameObj)
+  }
+
+  addBlock(nameObj){
+    this.addBlocks([nameObj]);
   }
 
   createCodeCache(){
@@ -47,7 +61,7 @@ module.exports = class Block {
 
   addCode(name, str, position='code', newLine=true){
     if(newLine) str+= '\n';
-    this.caches[name].codes[position].push(str);
+    this.blocks[name].codes[position].push(str);
   }
 
   addBeforeCall(fn){
@@ -61,7 +75,7 @@ module.exports = class Block {
   genCode() {
     this.beforeCallFns.forEach(fn=>fn.call(this,this));
 
-    let codes = Object.values(this.caches).sort((a,b)=>a.indx-b.indx);
+    let codes = Object.values(this.blocks).sort((a,b)=>a.indx-b.indx);
 
     return codes.reduce((accu, e)=>{
 

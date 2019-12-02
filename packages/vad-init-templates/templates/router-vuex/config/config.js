@@ -1,17 +1,26 @@
+const VadPlugins = require('@fow/vad/plugins');
+
 module.exports = {
-  router: true,
-  vuex: true,
   devServer: {
     port: 3006
   },
-  clientEnv: {
+  defaultProcessEnv: {
     // access it with process.env.BUILD_TYPE
     BUILD_TYPE: 'test'
   },
-  globalVar: {
+  defineVar: {
     // access it with NAME
     NAME: 'Hue'
   },
+  plugins: [
+    new VadPlugins({
+      init: true,
+      puta: true,
+      vuex: true,
+      router: true,
+      componentsPreview: false
+    })
+  ],
   compatibility: {
     // level: , //0,1,2
 

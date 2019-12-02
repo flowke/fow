@@ -48,7 +48,7 @@ function walk(ast, visitor){
 }
 
 function genCode(ast, ...rest) {
-  return generate(ast, ...rest)
+  return generator(ast, ...rest)
 }
 
 function walkCode(code, visitor, ...parseOp){

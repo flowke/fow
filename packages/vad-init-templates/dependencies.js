@@ -20,7 +20,7 @@ module.exports = {
 
   devCommonLibs: {
     "vue-template-compiler": "^2.6.10",
-    // "@fow/vad": 'latest'
+    "@fow/vad": 'latest'
   },
 
   type: {

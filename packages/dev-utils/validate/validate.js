@@ -10,9 +10,9 @@ const ajv = new Ajv({
 require("ajv-keywords")(ajv, ["instanceof"]);
 require("./keywords/absolutePath")(ajv);
 
-const validate = (schema, options) => {
+const validate = (schema, date) => {
   const v = ajv.compile(schema);
-  const valid = v(options);
+  const valid = v(date);
 
   return {
     errors: valid ? null : v.errors

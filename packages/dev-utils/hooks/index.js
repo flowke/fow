@@ -27,11 +27,11 @@ class Hook extends EventEmitter{
 
   // listeners
   l(type){
-    return this.listeners(this.name +'-' +type);
+    return this.listeners(type);
   }
 
   rowl(type){
-    return this.rawListeners(this.name + '-' + type)
+    return this.rawListeners(type)
   }
 
   baseOn(type, msg, fn){
@@ -40,12 +40,18 @@ class Hook extends EventEmitter{
       msg = ''
     }
 
-    this.on(`${this.name}-${type}`, (...args) => {
+    this.on(type, (...args) => {
       // return fn(...args);
       try {
-        return fn.call(undefined, ...args)
+        return {
+          value: fn.call(undefined, ...args),
+          error: null
+        }
       } catch (error) {
         this.emit('error', new Error(`Hook-Error: ${msg}\n message: ${error.message}`))
+        return {
+          error
+        }
       }
     });
   }
@@ -56,7 +62,7 @@ class Hook extends EventEmitter{
   }
 
   call(...args) {
-    this.emit(this.name + '-' +'onCall', ...args);
+    this.emit('onCall', ...args);
   };
 
   onAsync(msg, fn) {
@@ -75,7 +81,7 @@ class Hook extends EventEmitter{
 
   }
 
-  // 异步穿行执行
+  // 异步串行执行
   asyncSeriesCall(...args){
     let l = this.l('onAsync');
 
@@ -95,9 +101,6 @@ class Hook extends EventEmitter{
 
   }
 
- 
-
-
 }
 
 function call(name, args){
@@ -106,20 +109,34 @@ function call(name, args){
 
 function createFnPromise(fn, ...args) {
   return new Promise((rv, rj) => {
-    let done = (err,...args) => {
+    let done = (err,value) => {
       if (!err) {
-        rv(args);
+        rv({
+          error: err,
+          value
+        });
       }
-      rj(err)
+      rv({
+        error: err
+      })
     }
 
-    let out = fn(...args, done)
+    let out = fn(...args, done);
 
-    if (Object.prototype.toString.call(out) === '[object Promise]') {
-      out
-        .then(res => rv(res))
-        .catch(err => rj(err))
+    if(out.error){
+      rv({
+        error: out.error
+      });
+    } else if (Object.prototype.toString.call(out.value) === '[object Promise]') {
+      out.value
+        .then(res => rv({
+          value: res
+        }))
+        .catch(err => rv({
+          error: err
+        }))
     }
+
   })
 }
 

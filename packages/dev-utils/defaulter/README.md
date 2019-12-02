@@ -28,7 +28,7 @@ module.exports = class DfOptions extends Defaulter{
 
 ## 实例 api
 
-### define(path, dfValue, type="replace", isForce=false)
+### define(path, dfValue, type="set", isForce=false)
 
 path: 值所在的路径
 

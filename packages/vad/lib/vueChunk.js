@@ -20,7 +20,11 @@ module.exports = class VueChunk extends Chunk{
       path: ''
     }
 
+    // newVmCode 是一串代码, 用于实例化 vm
     this.newVmCode = this.createVMCode();
+
+    this.vmHandlers = [];
+    this.routeHandlers = [];
   }
 
   // 设置要渲染的组件名字, 
@@ -44,6 +48,32 @@ module.exports = class VueChunk extends Chunk{
   // 获得创建 vm 的 code
   createVMCode(){
     return '__createVM()'
+  }
+
+  // 注册 需要用到 handle 的 handlers
+  registerVM(fn){
+    this.vmHandlers.push(fn)
+  }
+
+  runVM(chunk, vmCode){
+    return this.vmHandlers.reduce((accu, fn)=>{
+      return accu + '\n' + fn(chunk, vmCode)
+    }, '')
+  }
+
+  // 注册要用到路由的 handler
+  registerRouter(fn){
+    
+    this.routeHandlers.push(fn)
+  }
+
+  runRouter(chunk, code){
+    
+    return this.routeHandlers.reduce((accu, fn) => {
+      
+      return accu + '\n' + fn(chunk, code)
+    }, '')
+    
   }
 
 

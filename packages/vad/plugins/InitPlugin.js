@@ -44,23 +44,23 @@ module.exports = class InitPlugin{
       }
 
       chunks.forEach(chunk=>{
-        chunk.addCache({
-          name: '__pluginInit',
-          indx: -9999
-        });
+        // chunk.addBlock({
+        //   name: '__pluginInit',
+        //   indx: -9999
+        // });
 
         if (hasInitFile){
           let importCode = `import init from "@/init";`
-          chunk.addCode('__pluginInit', importCode);
+          chunk.import(importCode, 'post');
         }
 
         if (hasDfExport) {
-          
-
+        
           chunk.setNewVmCode(vmCode=>{
             chunk.code([
               'function __doneFN(callback){',
               `  let vm = ${vmCode}`,
+              chunk.runVM(chunk, 'vm'),
               `  callback && callback({vm})`,
               '}'
             ].join('\n'));

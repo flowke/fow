@@ -4,11 +4,12 @@
   "description": "fow",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs": "docsify serve docs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flowke/flowki.git"
+    "url": "git+https://github.com/flowke/fow.git"
   },
   "author": "",
   "license": "ISC",

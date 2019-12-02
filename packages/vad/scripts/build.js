@@ -1,4 +1,4 @@
-
+const VueRunner = require('../VueRunner');
 module.exports = ()=>{
-  require('../VueRunner').build()
+  new VueRunner().build()
 }

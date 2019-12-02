@@ -6,12 +6,12 @@ const {
 } = require('@fow/dev-utils');
 
 
-module.exports = class ReduxPlugin{
+module.exports = class VuexPlugin{
 
   run(runner){
     let {appRoot} = runner.runnerConfig
 
-    runner.hooks.watch.onCall('ReduxPlugin', add=>{
+    runner.hooks.watch.onCall('VuexPlugin', add=>{
       add({
         type: 'reemit',
         paths: [
@@ -24,7 +24,7 @@ module.exports = class ReduxPlugin{
 
     });
 
-    runner.hooks.entry.onCall('ReduxPlugin-entry', chunks=>{
+    runner.hooks.entry.onCall('VuexPlugin-entry', chunks=>{
       let existCfg = fs.existsSync(path.resolve(appRoot, 'src/store/index.js'));
 
       let modules = []
