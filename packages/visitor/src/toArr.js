@@ -24,7 +24,7 @@ class Value {
     eachObj(this.__rowValue, (key, value, i)=>{
       this.keys.push(key);
       this.values.push(value);
-      this.arr.push([key, value]);
+      this.entries.push([key, value]);
       fn && fn(key, value, i);
     })
 

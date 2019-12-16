@@ -43,7 +43,7 @@ function () {
 
         _this.values.push(value);
 
-        _this.arr.push([key, value]);
+        _this.entries.push([key, value]);
 
         fn && fn(key, value, i);
       });

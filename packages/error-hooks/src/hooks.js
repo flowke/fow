@@ -43,3 +43,5 @@ Hooks.prototype.dispatchEvent = function (type, event) {
   }
 };
 Hooks.prototype.dispatch = Hooks.prototype.dispatchEvent
+
+export default Hooks

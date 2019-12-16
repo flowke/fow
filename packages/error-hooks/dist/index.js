@@ -31,7 +31,7 @@ var vuePlugin = {
       try {
         if (old) old(err, vm, info);
       } catch (error) {
-        throw error;
+        console.error(error);
       }
 
       throw err;
@@ -65,31 +65,64 @@ function (_Hook) {
     value: function initErrorCatch() {
       var _this2 = this;
 
-      window.addEventListener('error', function (ev) {
-        var error = ev.error;
+      function isBiError(name) {
+        return !!['Error', 'EvalError', 'InternalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'URIError'].find(name);
+      }
 
-        if (type(error, 'Object') && _this2.listeners['E' + error.name]) {
-          _this2.dispatch('E' + error.name, {
-            error: error,
-            payload: error.payload,
-            "catch": function _catch(fn) {
-              ev.preventDefault();
-              type(fn, 'Function') && fn(error);
-            }
-          });
+      window.addEventListener('error', function (ev) {
+        var error = ev.error,
+            target = ev.target;
+
+        if (target && target.tagName) {
+          var name = String(target.tagName).toUpperCase();
+
+          if (_this2.listeners['ETag:' + name]) {
+            _this2.dispatch('ETag:' + name, {
+              target: target,
+              "catch": function _catch(fn) {
+                ev.preventDefault();
+                type(fn, 'Function') && fn(error);
+                return true;
+              }
+            });
+          }
+
+          return;
+        }
+
+        if (type(error, 'Object')) {
+          var _name = error.name;
+          if (isBiError(_name)) _name = 'Error';
+
+          if (_this2.listeners['E:' + _name]) {
+            _this2.dispatch('E:' + _name, {
+              error: error,
+              target: target,
+              payload: error.payload,
+              "catch": function _catch(fn) {
+                ev.preventDefault();
+                type(fn, 'Function') && fn(error);
+                return true;
+              }
+            });
+          }
         }
       });
       window.addEventListener('unhandledrejection', function (ev) {
         var promise = ev.promise,
-            reason = ev.reason;
+            reason = ev.reason,
+            target = ev.target;
 
         if (type(reason, 'Object')) {
-          var nameType = 'E:' + reason.name;
+          var name = reason.name;
+          if (isBiError(reason.name)) name = 'Error';
+          var nameType = 'E:' + name;
 
           if (_this2.listeners[nameType]) {
             _this2.dispatch(nameType, {
               error: reason,
               promise: promise,
+              target: target,
               payload: reason.payload,
               "catch": function _catch(fn) {
                 promise && promise["catch"](function (err) {
@@ -103,6 +136,7 @@ function (_Hook) {
             _this2.dispatch('E:unhandledrejection', {
               error: new Error('unhandledrejection'),
               promise: promise,
+              target: target,
               "catch": function _catch(fn) {
                 promise && promise["catch"](function (err) {
                   type(fn, 'Function') && fn(err);
@@ -114,11 +148,38 @@ function (_Hook) {
       });
     }
   }, {
+    key: "toErrorConxt",
+    value: function toErrorConxt(type, error, promise, target) {
+      var ctx = {
+        error: error,
+        promise: promise,
+        target: target,
+        payload: error ? error.payload : undefined
+      };
+
+      if (type === 'error') {
+        ctx["catch"] = function (fn) {
+          ev.preventDefault();
+          type(fn, 'Function') && fn(error);
+          return true;
+        };
+      } else if (type === 'promise') {
+        ctx["catch"] = function (fn) {
+          promise && promise["catch"](function (err) {
+            type(fn, 'Function') && fn(err);
+          });
+        };
+      }
+
+      return ctx;
+    }
+  }, {
     key: "register",
     value: function register(HooksObj) {
       var _this3 = this;
 
       var is = typs;
+      if (!is(HooksObj, 'Object')) return;
 
       var _loop = function _loop(_type) {
         var arr = _type.split(':');

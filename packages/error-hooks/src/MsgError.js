@@ -10,7 +10,7 @@ export default function (name, callback) {
       this.payload = info;
       Error.captureStackTrace(this, this.constructor);
 
-      callback(this, info)
+      callback && callback(this, info)
     }
 
   }
