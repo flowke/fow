@@ -282,28 +282,38 @@ module.exports = class Create{
       })
   }
 
-  //* 获取包信息
+  //* 获取包信息\
+  // packageName: 如 lodash
   fetchNpmPkgInfo(packageName){
     spinner.start('fetching template info...')
     let registry = this.getRegistry();
     spinner.succeed(`got registry: ${registry}`)
 
-    let url = `${registry}/${packageName}/latest`;
+    let packageInfo = null
+
+    if (registry.includes('npm.taobao')){
+      packageInfo = this.request(`${registry}/${packageName}/latest`)
+    }else{
+      packageInfo = this.request(`https://registry.npmjs.org/${packageName}`)
+      .then(res=>{
+        let { latest } = res['dist-tags'];
+        return res.versions[latest]
+      }) 
+    }
+
+    
     spinner.start('fetching template info...')
 
-    return this.request(url)
+    return packageInfo
     .then(res=>{
-      try {
-        spinner.succeed(`got template info`)
-        return res
-      } catch (error) {
-        spinner.fail('fail to fetch package info, retry later...')
-        process.exit(1)
-      }
+      spinner.succeed(`got template info`)
+      return res
+    })
+    .catch(error=>{
+      spinner.fail('fail to fetch package info, retry later...')
+      process.exit(1)
     })
   }
-
-  
 
   //* 基于模板配置信息, 询问出一种模板类型
   askTemplateType(templateConfig){
@@ -532,7 +542,6 @@ module.exports = class Create{
     })
     .catch(e=>{
       spinner.fail(('request fali:' + e.message + ' when fetching' + ' ' + url).red.bold)
-      process.exit(0)
     })
   }
 

@@ -5,9 +5,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "cross-env NODE_ENV=development vad dev",
-    "build": "cross-env NODE_ENV=production vad build",
-    "preview": "cross-env PREVIEW_MODE=true NODE_ENV=development vad dev"
+    "start": "vad dev",
+    "build": "build",
+    "preview": "cross-env PREVIEW_MODE=true vad dev"
   },
   "dependencies": {
   {% for key, val in dependencies %}
