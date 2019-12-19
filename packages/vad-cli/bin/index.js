@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const Create = require('@fow/dev-utils/create');
+const Create = require('@fow/cli-utils/create');
 const yargs = require('yargs');
 const path = require('path');
 require('colors');
