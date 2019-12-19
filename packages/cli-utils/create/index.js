@@ -7,7 +7,7 @@ const shell = require('shelljs');
 const compressing = require('compressing');
 const os = require('os');
 const ora = require('ora');
-const swig = require('swig');
+const arT = require('art-template');
 const { spawn } = require('child_process');
 
 require('colors')
@@ -409,14 +409,14 @@ module.exports = class Create{
       let to = path.resolve(toDir, file).replace(tplName, realName)
 
       let content = ''
-
+      
       // rendered content
       if (/src/.test(fullPath)) {
         content = fse.readFileSync(fullPath)
       } else {
-        content = swig.renderFile(fullPath, locals);
+        
+        content = arT.template.render(fse.readFileSync(fullPath), locals);
       }
-
 
       if (isJson) {
         content = JSON.parse(content);
