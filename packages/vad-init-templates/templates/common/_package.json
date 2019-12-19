@@ -10,22 +10,17 @@
     "preview": "cross-env PREVIEW_MODE=true vad dev"
   },
   "dependencies": {
-  {% for key, val in dependencies %}
-  {% if loop.last %}
-    "{{key}}": "{{val}}"
-  {% else %}
-    "{{ key }}": "{{val}}",
-  {% endif %}
-  {% endfor %}
+  {{set dep = $imports.Object.entries($data.dependencies)}}
+  {{set devDep = $imports.Object.entries($data.devDependencies)}}
+  {{ each dep val indx }}
+    "{{ val[0] }}": "{{val[1]}}"{{if(indx!==dep.length-1)}}, {{/if}}
+  {{ /each }}
 
   },
   "devDependencies": {
-    {% for key, val in devDependencies %}
-    {% if loop.last %}
-      "{{key}}": "{{val}}"
-    {% else %}
-      "{{ key }}": "{{val}}",
-    {% endif %}
-    {% endfor %}
+  {{ each $data.devDependencies val key }}
+    "{{ val[0] }}": "{{val[1]}}"{{if(indx!==devDep.length-1)}},{{/if}}
+  {{ /each }}
+
   }
 }

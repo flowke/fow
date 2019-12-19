@@ -1,6 +1,6 @@
 {
   "name": "@fow/vad-cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "bin": {
     "vad": "./bin/index.js"
@@ -12,7 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fow/cli-utils": "^1.0.0",
+    "@fow/cli-utils": "^1.0.3",
+    "art-template": "^4.13.2",
     "colors": "^1.4.0",
     "yargs": "^15.0.2"
   }

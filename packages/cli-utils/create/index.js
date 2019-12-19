@@ -117,7 +117,6 @@ module.exports = class Create{
         message: 'type a directory name to init:',
         name: 'dir',
         validate: function (dir) {
-          // console.log(dir, typeof dir, 'dir')
           if (!dir) return 'dir must be a valid name';
 
           if (fse.existsSync(path.resolve(dir))) {
@@ -409,13 +408,13 @@ module.exports = class Create{
       let to = path.resolve(toDir, file).replace(tplName, realName)
 
       let content = ''
-      
       // rendered content
       if (/src/.test(fullPath)) {
         content = fse.readFileSync(fullPath)
       } else {
         
-        content = arT.template.render(fse.readFileSync(fullPath), locals);
+        content = arT(fullPath, locals);
+        
       }
 
       if (isJson) {
@@ -453,6 +452,7 @@ module.exports = class Create{
 
       return true
     } catch (error) {
+      
       spinner.fail()
       return false
     }

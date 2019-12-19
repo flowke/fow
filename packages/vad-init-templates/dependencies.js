@@ -13,7 +13,7 @@ module.exports = {
 
   commonLibs: {
     "cross-env": 'latest',
-    "@fow/vad": '^1.0.4'
+    "@fow/vad": '^1.1.0'
     // vue: '^2.6.11',
     // puta: '^1.2.1',
     // '@babel/runtime': '^7.7.7',
