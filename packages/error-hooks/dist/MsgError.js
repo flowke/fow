@@ -35,7 +35,7 @@ export default function (name, callback) {
         _this.name = name;
         _this.payload = info;
         Error.captureStackTrace(_assertThisInitialized(_this), _this.constructor);
-        callback(_assertThisInitialized(_this), info);
+        callback && callback(_assertThisInitialized(_this), info);
         return _this;
       }
 

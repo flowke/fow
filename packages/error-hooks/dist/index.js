@@ -8,9 +8,13 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
+
+function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
@@ -18,26 +22,6 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 import createErr from './MsgError';
 import Hook from './hooks';
-var hook = null;
-var vuePlugin = {
-  install: function install(Vue) {
-    var old = null;
-
-    if (type(Vue.config.errorHandler, 'function')) {
-      old = Vue.config.errorHandler;
-    }
-
-    Vue.config.errorHandler = function (err, vm, info) {
-      try {
-        if (old) old(err, vm, info);
-      } catch (error) {
-        console.error(error);
-      }
-
-      throw err;
-    };
-  }
-};
 
 var Hooks =
 /*#__PURE__*/
@@ -50,13 +34,55 @@ function (_Hook) {
     _classCallCheck(this, Hooks);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Hooks).call(this));
-    if (hook) return _possibleConstructorReturn(_this, hook);
-    hook = _assertThisInitialized(_this);
+    if (window._errorHooks) return _possibleConstructorReturn(_this, window._errorHooks);
+    window._errorHooks = _assertThisInitialized(_this);
+
+    if (window._errorUncatchEvents) {
+      window.removeEventListener('error', window._errorUncatchEvents.push, true);
+      window.removeEventListener('unhandledrejection', window._errorUncatchEvents.push);
+      _this.errorUncatchEvents = window._errorUncatchEvents.slice();
+      window._errorUncatchEvents = undefined;
+    }
+
     _this.errorTypes = {};
 
     _this.initErrorCatch();
 
-    _this.vuePlugin = vuePlugin;
+    var self = _assertThisInitialized(_this);
+
+    _this.vuePlugin = {
+      install: function install(Vue) {
+        var old = null;
+
+        if (type(Vue.config.errorHandler, 'function')) {
+          old = Vue.config.errorHandler;
+        }
+
+        Vue.config.errorHandler = function (err, vm, info) {
+          try {
+            if (old) old(err, vm, info);
+          } catch (error) {
+            console.error(error);
+          }
+
+          var logErr = function logErr() {
+            console.error(err);
+          };
+
+          self.dispatchWithCtx({
+            error: err,
+            "catch": function _catch(fn) {
+              logErr = function logErr(f) {
+                return f;
+              };
+
+              fn && fn(err);
+            }
+          }, 'E');
+          logErr();
+        };
+      }
+    };
     return _this;
   }
 
@@ -65,145 +91,166 @@ function (_Hook) {
     value: function initErrorCatch() {
       var _this2 = this;
 
-      function isBiError(name) {
-        return !!['Error', 'EvalError', 'InternalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'URIError'].find(name);
-      }
-
       window.addEventListener('error', function (ev) {
-        var error = ev.error,
-            target = ev.target;
-
-        if (target && target.tagName) {
-          var name = String(target.tagName).toUpperCase();
-
-          if (_this2.listeners['ETag:' + name]) {
-            _this2.dispatch('ETag:' + name, {
-              target: target,
-              "catch": function _catch(fn) {
-                ev.preventDefault();
-                type(fn, 'Function') && fn(error);
-                return true;
-              }
-            });
-          }
-
-          return;
-        }
-
-        if (type(error, 'Object')) {
-          var _name = error.name;
-          if (isBiError(_name)) _name = 'Error';
-
-          if (_this2.listeners['E:' + _name]) {
-            _this2.dispatch('E:' + _name, {
-              error: error,
-              target: target,
-              payload: error.payload,
-              "catch": function _catch(fn) {
-                ev.preventDefault();
-                type(fn, 'Function') && fn(error);
-                return true;
-              }
-            });
-          }
-        }
-      });
+        _this2.dispatchWithEvent(ev);
+      }, true);
       window.addEventListener('unhandledrejection', function (ev) {
-        var promise = ev.promise,
-            reason = ev.reason,
-            target = ev.target;
-
-        if (type(reason, 'Object')) {
-          var name = reason.name;
-          if (isBiError(reason.name)) name = 'Error';
-          var nameType = 'E:' + name;
-
-          if (_this2.listeners[nameType]) {
-            _this2.dispatch(nameType, {
-              error: reason,
-              promise: promise,
-              target: target,
-              payload: reason.payload,
-              "catch": function _catch(fn) {
-                promise && promise["catch"](function (err) {
-                  type(fn, 'Function') && fn(err);
-                });
-              }
-            });
-          }
-        } else {
-          if (_this2.listeners['E:unhandledrejection']) {
-            _this2.dispatch('E:unhandledrejection', {
-              error: new Error('unhandledrejection'),
-              promise: promise,
-              target: target,
-              "catch": function _catch(fn) {
-                promise && promise["catch"](function (err) {
-                  type(fn, 'Function') && fn(err);
-                });
-              }
-            });
-          }
-        }
+        _this2.dispatchWithEvent(ev);
       });
     }
   }, {
-    key: "toErrorConxt",
-    value: function toErrorConxt(type, error, promise, target) {
-      var ctx = {
-        error: error,
-        promise: promise,
-        target: target,
-        payload: error ? error.payload : undefined
-      };
+    key: "getDispatchInfoWithCtxTag",
+    value: function getDispatchInfoWithCtxTag(ctx, errType) {
+      var promise = ctx.promise,
+          error = ctx.error,
+          target = ctx.target,
+          catchError = ctx["catch"];
+      var evCtx = null;
+      var errName = null;
 
-      if (type === 'error') {
-        ctx["catch"] = function (fn) {
-          ev.preventDefault();
-          type(fn, 'Function') && fn(error);
-          return true;
-        };
-      } else if (type === 'promise') {
-        ctx["catch"] = function (fn) {
-          promise && promise["catch"](function (err) {
-            type(fn, 'Function') && fn(err);
-          });
-        };
+      switch (errType) {
+        case 'ETag':
+        case 'Etag':
+          {
+            if (target && target.tagName) {
+              errName = String(target.tagName).toUpperCase();
+              evCtx = {
+                target: target,
+                "catch": catchError
+              };
+            }
+
+            break;
+          }
+
+        case 'E':
+          {
+            if (type(error, 'Error')) {
+              errName = error.name;
+              if (isBiError(errName)) errName = 'Error';
+              evCtx = {
+                error: error,
+                promise: promise,
+                payload: error.payload,
+                "catch": catchError
+              };
+            }
+
+            break;
+          }
       }
 
-      return ctx;
+      if (evCtx && errType && errName) {
+        if (this.listeners[errType + ':' + errName]) {
+          return [errType + ':' + errName, evCtx];
+        }
+      }
+    }
+  }, {
+    key: "getDispatchInfoWithEvent",
+    value: function getDispatchInfoWithEvent(ev) {
+      var error = ev.error,
+          target = ev.target,
+          promise = ev.promise,
+          reason = ev.reason;
+
+      var evCatch = function evCatch(fn) {
+        ev.preventDefault();
+        type(fn, 'Function') && fn(error);
+      };
+
+      var ctx = {
+        "catch": evCatch,
+        promise: promise
+      };
+      var tag = '';
+
+      if (target) {
+        ctx.target = target;
+        tag = 'ETag';
+      } else if (type(error, 'Error')) {
+        ctx.error = error;
+        tag = 'E';
+      } else if (!type(error, 'Error')) {
+        ctx.error = new Error('Not standard Error, more information in Error.payload');
+        ctx.error.payload = error;
+        tag = 'E';
+      } else if (type(reason, 'Error')) {
+        ctx.error = reason;
+        tag = 'E';
+      } else if (!type(reason, 'Error')) {
+        ctx.error = new Error('Not standard Error, more information in Error.payload');
+        ctx.error.payload = reason;
+        tag = 'E';
+      }
+
+      if (tag) {
+        return this.getDispatchInfoWithCtxTag(ctx, tag);
+      }
+    }
+  }, {
+    key: "dispatchWithEvent",
+    value: function dispatchWithEvent(ev) {
+      var info = this.getDispatchInfoWithEvent(ev);
+      if (info) this.dispatch.apply(this, info);
+    }
+  }, {
+    key: "dispatchWithCtx",
+    value: function dispatchWithCtx(ctx, type) {
+      var info = this.getDispatchInfoWithCtxTag(ctx, type);
+      if (info) this.dispatch.apply(this, info);
+    }
+  }, {
+    key: "addEventListener",
+    value: function addEventListener(type, callback) {
+      var _this3 = this;
+
+      _get(_getPrototypeOf(Hooks.prototype), "addEventListener", this).call(this, type, callback);
+
+      if (this.errorUncatchEvents) {
+        this.errorUncatchEvents.forEach(function (ev) {
+          var info = _this3.getDispatchInfoWithEvent(ev);
+
+          if (info && info[0] === type) {
+            callback(info[1]);
+          }
+        });
+      }
     }
   }, {
     key: "register",
     value: function register(HooksObj) {
-      var _this3 = this;
+      var _this4 = this;
 
-      var is = typs;
+      var is = type;
       if (!is(HooksObj, 'Object')) return;
 
       var _loop = function _loop(_type) {
         var arr = _type.split(':');
 
         var cb = HooksObj[_type];
-        if (is(cb, 'Function')) return {
-          v: void 0
-        };
+        if (!is(cb, 'Function')) return "continue";
 
-        _this3.addEventListener(_type, function (ev) {
+        _this4.addEventListener(_type, function (ev) {
           cb.call(null, ev);
         });
 
-        if (arr.lengt == 2 && arr[0] === 'E' && arr[1].length) {
-          _this3.errorTypes[arr[1]] = createErr(arr[1]);
-          Error[arr[1]] = _this3.errorTypes[arr[1]];
+        if (arr.length == 2 && arr[0] === 'E' && arr[1].length) {
+          _this4.errorTypes[arr[1]] = createErr(arr[1]);
+          Error[arr[1]] = _this4.errorTypes[arr[1]];
         }
       };
 
       for (var _type in HooksObj) {
         var _ret = _loop(_type);
 
-        if (_typeof(_ret) === "object") return _ret.v;
+        if (_ret === "continue") continue;
       }
+    }
+  }, {
+    key: "add",
+    get: function get() {
+      return this.addEventListener;
     }
   }]);
 
@@ -212,6 +259,15 @@ function (_Hook) {
 
 function type(val, str) {
   return Object.prototype.toString.call(val).toLowerCase() === "[object ".concat(str, "]").toLowerCase();
+} // is builtin error
+
+
+function isBiError(name) {
+  return ['Error', 'EvalError', 'InternalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'URIError'].indexOf(name) !== -1;
+}
+
+function isErrorTag(name) {
+  return ['IMG', 'SCRIPT', 'LINK'].indexOf(name) !== -1;
 }
 
 export default new Hooks();
