@@ -1,6 +1,6 @@
 {
   "name": "@fow/vad",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "@babel/runtime": "^7.7.7",
     "@babel/traverse": "^7.7.4",
     "@babel/types": "^7.7.4",
-    "@fow/dev-utils": "^1.1.0",
+    "@fow/dev-utils": "^1.1.1",
     "@fow/error-hooks": "^1.1.1",
     "@fow/visitor": "^1.2.4",
     "babel-plugin-transform-vue-jsx": "^4",
