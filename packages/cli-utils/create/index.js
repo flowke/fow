@@ -197,7 +197,12 @@ module.exports = class Create{
       })
     })
     .then(()=>{
-      console.log('\n');
+      console.log();
+      spinner.stopAndPersist({
+        text: 'Install packages done!'.bold.green,
+        symbol: '🍎🍎🍎'
+      })
+      console.log();
       this.logUsage(createMethod, toDirName);
       return true
     })
