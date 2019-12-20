@@ -128,7 +128,7 @@ class Hooks extends Hook{
     };
     let tag = ''
 
-    if (target) {
+    if (target && target.nodeType === Node.ELEMENT_NODE) {
       ctx.target = target;
       tag = 'ETag'
 

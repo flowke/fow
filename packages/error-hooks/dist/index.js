@@ -165,7 +165,7 @@ function (_Hook) {
       };
       var tag = '';
 
-      if (target) {
+      if (target && target.nodeType === Node.ELEMENT_NODE) {
         ctx.target = target;
         tag = 'ETag';
       } else if (type(error, 'Error')) {
