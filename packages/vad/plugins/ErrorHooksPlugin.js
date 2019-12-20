@@ -49,8 +49,10 @@ module.exports = class ErrorHooksPlugin{
           newChunk.emitPath = emitPath;
           newChunk.import('import errorHooks from "@fow/error-hooks";');
           newChunk.import(`import errorHooksConfig from '@/${configName}';`)
+          newChunk.import(`import Vue from "vue/dist/vue.runtime.esm";`)
           newChunk.code(`errorHooks.register(errorHooksConfig);`)
           newChunk.code(`window.$hooks = errorHooks`)
+          newChunk.code(`Vue.use(errorHooks.vuePlugin)`)
           chunk.import(`import '${toPath.relativePath( chunk.emitPath, emitPath)}';`,'pre')
           
           runner.addAppFile(emitPath, newChunk.genCode());
