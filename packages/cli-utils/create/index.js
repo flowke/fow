@@ -226,15 +226,6 @@ module.exports = class Create{
       return false
     })
 
-
-
-    
-
-
-
-   
-
-    
   }
   // * 通过 npm 生成模板, 并收集生成过程中的信息
   generateTemplateWithNpm(options={}){
