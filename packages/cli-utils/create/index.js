@@ -176,6 +176,12 @@ module.exports = class Create{
     }
 
     return new Promise((rv,rj)=>{
+      console.log();// 隔行
+      spinner.stopAndPersist({
+        text: 'Starting install packages with NPM...',
+        symbol: '🍉🍉🍉'
+      })
+      console.log(); // 隔行
       
       let p = spawn('npm', ['i'], { stdio: 'inherit' });
       p.on('exit', (c, s) => {
@@ -560,6 +566,7 @@ module.exports = class Create{
   ------
 
   other usage:
+    npm start - starting devServer and open browser
     npm run build - build app
     `).bold)
   }
