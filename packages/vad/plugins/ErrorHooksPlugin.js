@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const {
   ChunkBlock,
-  toPath
 } = require('@fow/dev-utils');
+const toPath = require('@fow/dev-utils/toPath');
 
 module.exports = class ErrorHooksPlugin{
 
@@ -37,11 +37,11 @@ module.exports = class ErrorHooksPlugin{
       })
     })
 
-    runner.hooks.entry('ErrorHooksPlugin-entry', (chunks)=>{
+    runner.hooks.entry.onCall('ErrorHooksPlugin-entry', (chunks)=>{
       chunks.forEach(chunk => {
         
         let cfgPath = path.resolve(appRoot, 'src', configName+'.js')
-
+        
         if (fs.existsSync(cfgPath)){
           
           let emitPath = path.resolve(runner.tempDir, '_errorHooks.js');
@@ -52,6 +52,7 @@ module.exports = class ErrorHooksPlugin{
           newChunk.code(`errorHooks.register(errorHooksConfig);`)
           newChunk.code(`window.$hooks = errorHooks`)
           chunk.import(`import '${toPath.relativePath( chunk.emitPath, emitPath)}';`,'pre')
+          
           runner.addAppFile(emitPath, newChunk.genCode());
         }
 
