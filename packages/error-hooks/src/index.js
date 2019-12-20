@@ -124,9 +124,10 @@ class Hooks extends Hook{
 
     let ctx = {
       catch: evCatch,
-      promise
     };
     let tag = ''
+
+    if (promise) ctx.promise = promise
 
     if (target && target.nodeType === Node.ELEMENT_NODE) {
       ctx.target = target;
