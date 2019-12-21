@@ -556,8 +556,9 @@ module.exports = class Create{
     
     console.log((`usage:
   ${cd}
-  - npm i
   - npm start
+
+  If the package installation fails automatically, try the installation again later.
 
   ------
 

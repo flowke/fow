@@ -8,6 +8,10 @@ npm i -g @fow/vad-cli
 
 ```
 
-初始化项目模板
+初始化项目模板:
+
+```bash
+vad init myApp
+```
 
 ### ffff
