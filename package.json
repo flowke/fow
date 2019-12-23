@@ -17,22 +17,8 @@
     "url": "https://github.com/flowke/fow/issues"
   },
   "homepage": "https://github.com/flowke/fow#readme",
-  "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@types/jest": "^24.0.18",
-    "@types/webpack-merge": "^4.1.5",
-    "babel-jest": "^24.8.0",
-    "jest": "^24.8.0",
-    "webpack-cli": "^3.3.6",
-    "webpack-merge": "^4.2.1"
-  },
+  "devDependencies": {},
   "dependencies": {
-    "@babel/generator": "^7.5.5",
-    "@babel/parser": "^7.5.5",
-    "@babel/traverse": "^7.5.5",
-    "@babel/types": "^7.5.5",
-    "@types/rimraf": "^2.0.2",
-    "rimraf": "^3.0.0"
+    "docsify": "^4.10.2"
   }
 }
