@@ -1,8 +1,17 @@
 * **开始**
   * [快速上手](start/getting-started.md)
+  * [目录和约定](start/dir-onvention.md)
+  * [配置](start/config.md)
+  * [功能集](start/function-pack.md)
   * [内部方法](/start/internal.md)
   * [VueChunk](/start/vueChunk.md)
   * [webpackConfigAPI](/start/webpackConfigApi.md)
+* **@fow/vad/plugins插件集**
+  * [介绍](vad-plugins/started.md)
+  * [init](vad-plugins/init.md)
+  * [puta](vad-plugins/puta.md)
+  * [router](vad-plugins/router.md)
+  * [vuex](vad-plugins/vuex.md)
 * **Hooks**
   * [Hook](hooks/hook.md)
   * [Vad中的hooks](hooks/hooks.md)

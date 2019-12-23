@@ -45,7 +45,7 @@ $ vad init myApp
 从 `package.json` 中可以看到 `cli` 已经预先帮我们填写了一些可以运行的 `npm scripts`. 内容可能根据 `@fow/vad-cli` 或 `@fow/vad-cli` 版本的不同而不同.
 
 
-更多关于 项目结构的信息, 请查看 `@fow/vad` 文档.
+更多关于 项目结构的信息, 请查看 <a href="#/start/getting-started" target="_blank">@fow/vad</a> 文档.
 
 ### 运行开发服务器或打包项目
 
