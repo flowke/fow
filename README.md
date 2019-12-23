@@ -2,6 +2,6 @@
 
 fow 项目包含众多包. 
 
-到以下地址查看相关目录:
+到以下地址查看相关文档:
 
-* @fow/vad : [地址](http://blog.flowke.com/fow/)
+* @fow/vad : [文档](http://blog.flowke.com/fow/)
