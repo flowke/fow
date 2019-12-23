@@ -1,3 +1,5 @@
 * [vad 文档](/start/getting-started.md)
+  * [开始](/start/getting-started.md)
+  * [主要插件](/vad-plugins/started.md)
 * [vad-cli](/vad-cli/getting-started.md)
 * [dev-utils](/dev-utils/index.md)
