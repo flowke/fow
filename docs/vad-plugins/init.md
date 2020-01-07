@@ -10,7 +10,7 @@
 //可以运行一些代码, 比如引入 element-ui
 import Element from 'element-ui'
 
-// 导出一个 function
+// 导出一个 function, done 参数可选
 export default (Vue, done )=>{
   Vue.use(Element)
 
@@ -27,7 +27,7 @@ export default (Vue, done )=>{
 }
 
 ```
-==
+
 在 init.js 默认导出的函数中:
 
 * 第一个参数是 Vue, 它引入自 `vue/dist/vue.runtime.esm`

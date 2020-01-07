@@ -26,7 +26,8 @@ module.exports = class VuexPlugin{
 
     runner.hooks.entry.onCall('VuexPlugin-entry', chunks=>{
       let existCfg = fs.existsSync(path.resolve(appRoot, 'src/store/index.js'));
-
+      console.log(existCfg, 'existCfg');
+      
       let modules = []
 
       if(existCfg){
@@ -42,7 +43,7 @@ module.exports = class VuexPlugin{
 
       modules = modules.map(n=>{
         return {
-          name: path.basename(m, '.js'),
+          name: path.basename(n, '.js'),
           path: n
         }
       });

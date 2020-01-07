@@ -1,1 +1,0 @@
-* [介绍与使用](/vad-cli/getting-started.md)

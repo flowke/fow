@@ -50,6 +50,7 @@ module.exports = class PutaPlugin{
       let newChunk = new ChunkBlock();
       newChunk.emitPath = emitPath;
       
+      // 得到不同的实例组
       let putaInstances = this.globFiles(runner);
       let putaInsArr = Object.entries(putaInstances);
 
@@ -61,9 +62,7 @@ module.exports = class PutaPlugin{
       chunks.forEach(chunk => {
 
         if (putaInsArr.length){
-          // console.log(path.dirname(chunk.emitPath));
-          
-          
+
           let relaPath = './'+path.relative(path.dirname(chunk.emitPath), newChunk.emitPath);
 
           chunk.import(`import "${relaPath}";`,'pre')
@@ -153,6 +152,14 @@ module.exports = class PutaPlugin{
     })
   }
 
+  // 得到类似于
+//  [
+//    {
+//     name: 模块名,
+//     modules: [], 模块文件名列表
+//     config: 配置文件名
+//    }
+//  ]
   globFiles(runner){
     let {appRoot} = runner.runnerConfig;
 

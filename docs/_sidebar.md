@@ -12,11 +12,3 @@
   * [puta](vad-plugins/puta.md)
   * [router](vad-plugins/router.md)
   * [vuex](vad-plugins/vuex.md)
-* **Hooks**
-  * [Hook](hooks/hook.md)
-  * [Vad中的hooks](hooks/hooks.md)
-* **Plugins**
-  * [PutaPlugin](plugins/putaPlugin.md)
-  * [InitPlugin](plugins/initPlugin.md)
-  * [RouterPlugin](plugins/routerPlugin.md)
-  * [VuexPlugin](plugins/vuexPlugin.md)

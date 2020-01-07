@@ -2,7 +2,7 @@
 
 `@fow/vad/plugins` 插件提供了各种各样的功能, 它内部是由一系列插件封装而成的插件集.
 
-先开启此插件, 如果你使用 `vad-cli` 生成了项目脚手架, 那么配置文件已近帮你填写了注册此插件的相关代码.
+先开启此插件, 如果你使用 `vad-cli` 生成了项目脚手架, 那么配置文件已经帮你填写了注册此插件的相关代码.
 
 比如如下这样: 
 
@@ -45,17 +45,17 @@ module.exports = {
 
 在项目中开启请求功能.
 
-## vuex
-
-`type: boolean | object`
-
-在项目中自动生成 vuex store, 提供给项目使用.
-
 ##  router
 
 `type: boolean | object`
 
 在项目中自动生成 router, 提供给项目使用.
+
+## vuex
+
+`type: boolean | object`
+
+在项目中自动生成 vuex store, 提供给项目使用.
 
 ##  componentsPreview
 
