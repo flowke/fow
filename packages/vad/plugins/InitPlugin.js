@@ -44,14 +44,14 @@ module.exports = class InitPlugin{
       }
 
       chunks.forEach(chunk=>{
-        // chunk.addBlock({
-        //   name: '__pluginInit',
-        //   indx: -9999
-        // });
+        chunk.addBlock({
+          name: '__pluginInit',
+          indx: -99999
+        });
 
         if (hasInitFile){
           let importCode = `import init from "@/init";`
-          chunk.import(importCode, 'post');
+          chunk.addCode('__pluginInit',importCode, 'pre');
         }
 
         if (hasDfExport) {
