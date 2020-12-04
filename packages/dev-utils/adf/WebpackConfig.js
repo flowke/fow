@@ -113,7 +113,7 @@ function createConfig(options) {
                 return m
               })
 
-              return rel
+              return rel.split(path.sep).join(path.sep)
             }
           },
         }

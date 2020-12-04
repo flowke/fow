@@ -22,7 +22,7 @@ module.exports = class RouterPlugin{
           chain.module
             .rule('handleRouter')
               .pre()
-              .test(/router\/index\.js$/)
+              .test(/router[\/\\]index\.js$/)
               .use('router')
                 .loader(require.resolve('../webpackLoader/vue-router-loader.js'))
         });
