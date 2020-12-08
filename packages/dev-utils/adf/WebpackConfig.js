@@ -109,11 +109,13 @@ function createConfig(options) {
               let pos = path.resolve(paths.outputPath, cssPath.replace(/\/[^/]*$/, ''));
 
               let rel = path.relative(pos, paths.outputPath).replace(/.$/, (m) => {
-                if (m !== '/') m = `${m}/`
+                if (m !== path.sep) m = `${m}${path.sep}`
                 return m
               })
 
-              return rel.split(path.sep).join(path.sep)
+              rel = rel.split(path.sep).join('/')
+
+              return rel
             }
           },
         }
