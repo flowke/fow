@@ -29,6 +29,7 @@ module.exports = class PutaPlugin{
       webpackCfg.chainJs(js=>{
         js.include
           .add(/puta\/lib\/index/)
+          .add(/puta\\lib\\index/)
       })
     });
 
@@ -50,6 +51,7 @@ module.exports = class PutaPlugin{
       let newChunk = new ChunkBlock();
       newChunk.emitPath = emitPath;
       
+      // 得到不同的实例组
       let putaInstances = this.globFiles(runner);
       let putaInsArr = Object.entries(putaInstances);
 
@@ -152,7 +154,14 @@ module.exports = class PutaPlugin{
       runner.addAppFile(emitPath, newChunk.genCode());
     })
   }
-
+  // 得到类似于
+//  [
+//    {
+//     name: 模块名,
+//     modules: [], 模块文件名列表
+//     config: 配置文件名
+//    }
+//  ]
   globFiles(runner){
     let {appRoot} = runner.runnerConfig;
 

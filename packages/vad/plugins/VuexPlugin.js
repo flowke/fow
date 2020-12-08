@@ -26,7 +26,7 @@ module.exports = class VuexPlugin{
 
     runner.hooks.entry.onCall('VuexPlugin-entry', chunks=>{
       let existCfg = fs.existsSync(path.resolve(appRoot, 'src/store/index.js'));
-
+      
       let modules = []
 
       if(existCfg){
@@ -42,7 +42,7 @@ module.exports = class VuexPlugin{
 
       modules = modules.map(n=>{
         return {
-          name: path.basename(m, '.js'),
+          name: path.basename(n, '.js'),
           path: n
         }
       });
@@ -61,11 +61,11 @@ module.exports = class VuexPlugin{
           nChunk.code(`storeConfig.modules = {}`)
 
           modules.forEach(m=>{
-            nChunk.import(`import __vuex_m_${m.name} from '@@/${m.path}`)
+            nChunk.import(`import __vuex_m_${m.name} from '@@/${m.path}'`)
             nChunk.code(`storeConfig.modules.${m.name} = __vuex_m_${m.name}`)
           });
 
-          nChunk.code(`let store = new Vuex.Store(storeConfig);`)
+          nChunk.code(`let store = ()=>new Vuex.Store(storeConfig);`)
           nChunk.code(`window.$store = store;`)
           nChunk.code(`export {`)
           nChunk.code(`  Vuex as _Vue_Vuex,`)
@@ -74,7 +74,7 @@ module.exports = class VuexPlugin{
 
           chunk.import(`import {_Vue_Vuex, _$store_ins_} from "${relaPath}";`, 'pre');
           chunk.code('Vue.use(_Vue_Vuex);');
-          chunk.vueOption(`store`, '_$store_ins_');
+          chunk.vueOption(`store`, '_$store_ins_()');
 
           runner.addAppFile(emitPath, nChunk.genCode());
 
