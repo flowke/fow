@@ -63,9 +63,7 @@ module.exports = class PutaPlugin{
       chunks.forEach(chunk => {
 
         if (putaInsArr.length){
-          // console.log(path.dirname(chunk.emitPath));
-          
-          
+
           let relaPath = './'+path.relative(path.dirname(chunk.emitPath), newChunk.emitPath);
 
           chunk.import(`import "${relaPath}";`,'pre')
